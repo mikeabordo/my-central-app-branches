@@ -1,0 +1,105 @@
+[
+  {
+    "tittle": "Main",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Dashboard",
+        "active_link": "/dashboard/admin-dashboard",
+        "route": "/dashboard/admin-dashboard",
+        "hasSubRoute": false,
+        "showSubRoute": false,
+        "icon": "grid"
+      }
+    ]
+  },
+  {
+    "tittle": "Inventory",
+    "active_link": "/inventory",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Book List",
+        "icon": "book",
+        "active_link": "/inventory/book-list",
+        "route": "/inventory/book-list",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Stock Requests",
+        "icon": "archive",
+        "active_link": "/inventory/stock-request",
+        "route": "/inventory/stock-request",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Pull Out Request",
+        "icon": "log-out",
+        "hasSubRoute": false,
+        "showSubRoute": false,
+        "active_link": "/inventory/pull-out-request",
+        "route": "/inventory/pull-out-request",
+        "subRoutes": []
+      },
+      {
+        "menuValue": "Item Return",
+        "icon": "rotate-ccw",
+        "hasSubRoute": false,
+        "showSubRoute": false,
+        "active_link": "/inventory/item-return",
+        "route": "/inventory/item-return",
+        "subRoutes": []
+      }
+    ]
+  },
+  {
+    "tittle": "Sales",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "Point of Sale (POS)",
+        "icon": "monitor",
+        "route": "/sales/pos",
+        "active_link": "/sales/pos",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Sales Report",
+        "icon": "bar-chart-2",
+        "active_link": "/sales/sales-report",
+        "route": "/sales/sales-report",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
+        "menuValue": "Item Report",
+        "icon": "bar-chart",
+        "active_link": "/sales/item-report",
+        "route": "/sales/item-report",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  },
+  {
+    "tittle": "Other",
+    "showAsTab": true,
+    "separateRoute": false,
+    "menu": [
+      {
+        "menuValue": "History",
+        "icon": "clock",
+        "route": "/sales/history",
+        "active_link": "/sales/history",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      }
+    ]
+  }
+]
