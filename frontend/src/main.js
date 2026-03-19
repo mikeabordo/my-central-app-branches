@@ -14,8 +14,6 @@ import FlagIcon from "vue-flag-icon";
 import VueSweetalert2 from "vue-sweetalert2";
 import VueFormWizard from "vue3-form-wizard";
 
-import ThemifyIcon from "vue-themify-icons";
-import SimpleLineIcons from "vue-simple-line";
 import Vue3EasyDataTable from "vue3-easy-data-table";
 import "vue3-easy-data-table/dist/style.css";
 
@@ -82,9 +80,6 @@ app.component("EasyDataTable", Vue3EasyDataTable);
 app.use(FlagIcon).use(VueFormWizard);
 app.use(VueSweetalert2);
 app.use(VueApexCharts);
-app
-  .use(Antd)
-  .use(BootstrapVue3)
-  .use(BToastPlugin);
+app.use(Antd).use(BootstrapVue3).use(BToastPlugin);
 
 app.use(router).mount("#app");

@@ -4,12 +4,20 @@
     <layout-sidebar></layout-sidebar>
     <div class="page-wrapper">
       <div class="content">
-        <div class="page-header">
-          <div class="row">
-            <div class="col-sm-12">
-              <h4 class="page-title">Stock Request</h4>
-              <p class="text-muted">Manage and track inventory replenishment requests.</p>
-            </div>
+        <div class="page-header justify-content-between">
+          <div class="page-title">
+            <h4>Stock Request</h4>
+            <h6>Manage and track inventory replenishment requests.</h6>
+          </div>
+          <div class="page-btn">
+            <button
+              type="button"
+              class="btn btn-added"
+              data-bs-toggle="modal"
+              data-bs-target="#add-stock-request"
+            >
+              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Stock Request
+            </button>
           </div>
         </div>
 
@@ -20,6 +28,7 @@
                 <DynamicDataTable
                   :headers="headers"
                   :items="items"
+                  :loading="loading"
                   searchPlaceholder="Search requests by ID, book, or requester..."
                 >
                   <!-- Custom slot for Status -->
@@ -32,12 +41,9 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <button class="btn btn-sm btn-outline-success" title="Approve" @click="approveRequest(item)">
-                        <vue-feather type="check" size="14"></vue-feather>
-                      </button>
-                      <button class="btn btn-sm btn-outline-danger" title="Reject" @click="rejectRequest(item)">
-                        <vue-feather type="x" size="14"></vue-feather>
-                      </button>
+                      <button class="btn btn-sm btn-outline-dark" title="View" @click="approveRequest(item)">
+                        View
+                      </button>  
                     </div>
                   </template>
                 </DynamicDataTable>
@@ -52,6 +58,7 @@
 
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
+import api from "@/services/api";
 
 export default {
   name: "StockRequest",
@@ -60,56 +67,40 @@ export default {
   },
   data() {
     return {
+      items: [],
+      loading: false,
       headers: [
-        { text: "#", value: "index", sortable: true },
-        { text: "ID", value: "id", sortable: true },
-        { text: "Branch", value: "branch", sortable: true },
-        { text: "Quantity", value: "quantity", sortable: true },
+        { text: "#", value: "id", sortable: true },
+        { text: "ID", value: "RSNo", sortable: true },
+        { text: "Branch", value: "toBranch", sortable: true },
         { text: "Status", value: "status", sortable: true },
-        { text: "Date", value: "date", sortable: true },
+        { text: "Date", value: "createdAt", sortable: true },
+        { text: "Remarks", value: "remarks", sortable: true },
         { text: "Actions", value: "actions" },
-      ],
-      items: [
-        {
-          id: 1,
-          requestId: "REQ-001",
-          bookTitle: "The Great Gatsby",
-          quantity: 20,
-          requester: "John Doe",
-          date: "2024-03-15",
-          status: "Pending",
-        },
-        {
-          id: 2,
-          requestId: "REQ-002",
-          bookTitle: "1984",
-          quantity: 15,
-          requester: "Jane Smith",
-          date: "2024-03-14",
-          status: "Approved",
-        },
-        {
-          id: 3,
-          requestId: "REQ-003",
-          bookTitle: "The Hobbit",
-          quantity: 10,
-          requester: "Bob Wilson",
-          date: "2024-03-13",
-          status: "Rejected",
-        },
-        {
-          id: 4,
-          requestId: "REQ-004",
-          bookTitle: "To Kill a Mockingbird",
-          quantity: 5,
-          requester: "Alice Brown",
-          date: "2024-03-12",
-          status: "Pending",
-        },
       ],
     };
   },
+  created() {
+    this.getStockRequests();
+  },
   methods: {
+
+    async getStockRequests() {
+      this.loading = true;
+      try {
+        const responseData = await api.get("/branches/stock-request/list");
+        // Ensure we always assign an Array to this.warehouses to prevent rendering crashes
+        let fetchedStockRequests = responseData.data || responseData || [];
+        this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
+        console.log("Stock requests fetched:", this.items);
+      } catch (error) {
+        console.error("Failed to fetch stock requests:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+
     getStatusClass(status) {
       switch (status) {
         case "Approved":

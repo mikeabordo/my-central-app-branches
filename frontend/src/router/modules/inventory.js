@@ -20,6 +20,11 @@ export default [
                 component: () => import('@/views/pages/inventory/stock-request.vue')
             },
             {
+                path: 'incoming-stocks',
+                name: 'incoming-stocks',
+                component: () => import('@/views/pages/inventory/incoming-stocks.vue')
+            },
+            {
                 path: 'pull-out-request',
                 name: 'pull-out-request',
                 component: () => import('@/views/pages/inventory/pull-out-request.vue')

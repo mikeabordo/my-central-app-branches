@@ -37,6 +37,14 @@
         "showSubRoute": false
       },
       {
+        "menuValue": "Incoming Stocks",
+        "icon": "chevrons-down",
+        "active_link": "/inventory/incoming-stocks",
+        "route": "/inventory/incoming-stocks",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
         "menuValue": "Pull Out Request",
         "icon": "log-out",
         "hasSubRoute": false,
