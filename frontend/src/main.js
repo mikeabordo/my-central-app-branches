@@ -26,7 +26,7 @@ import CollapsedSidebar from "@/views/layouts/collapsed-sidebar.vue";
 import HorizontalSidebar from "@/views/layouts/horizontal-sidebar.vue";
 
 /********* Breadcrumb component**********/
-import Breadcrumb from "@/components/breadcrumb/layout-breadcrumb.vue";
+// import Breadcrumb from "@/components/breadcrumb/layout-breadcrumb.vue";
 
 /********* Page component**********/
 
@@ -63,7 +63,7 @@ app.component("collapsed-sidebar", CollapsedSidebar);
 app.component("horizontal-sidebar", HorizontalSidebar);
 
 /********* Breadcrumb component**********/
-app.component("layout-breadcrumb", Breadcrumb);
+//app.component("layout-breadcrumb", Breadcrumb);
 
 /********* Page component**********/
 

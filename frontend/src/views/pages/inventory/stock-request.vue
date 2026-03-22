@@ -16,7 +16,7 @@
               data-bs-toggle="modal"
               data-bs-target="#add-stock-request"
             >
-              <vue-feather type="plus-circle" class="me-2"></vue-feather>Add New Stock Request
+              <vue-feather type="plus-circle" class="me-2"></vue-feather>New Stock Request
             </button>
           </div>
         </div>
@@ -54,16 +54,32 @@
       </div>
     </div>
   </div>
+  <add-modal
+    :modalId="'add-stock-request'"
+    :title="'Add Stock Request'"
+    :submitLabel="'Submit'"
+    :size="'lg'"
+    :fields="fields"
+    :apiEndpoint="'/branches/stock-request'"
+    :apiMethod="'post'"
+    :successMessage="'Stock request added successfully!'"
+    :errorMessage="'Failed to add stock request'"
+    @success="handleSuccess"
+    @error="handleError"
+  />
+
 </template>
 
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
+import AddModal from "@/components/modal/add-modal.vue";
 import api from "@/services/api";
 
 export default {
   name: "StockRequest",
   components: {
     DynamicDataTable,
+    AddModal,
   },
   data() {
     return {
@@ -77,6 +93,45 @@ export default {
         { text: "Date", value: "createdAt", sortable: true },
         { text: "Remarks", value: "remarks", sortable: true },
         { text: "Actions", value: "actions" },
+      ],
+      fields: [
+        {
+          key: "RSNo",
+          label: "Reference #",
+          type: "text",
+          required: true,
+          disabled: true,
+        },
+        {
+          key: "remarks",
+          label: "Remarks",
+          type: "textarea",
+          placeholder: "Enter remarks",
+          required: true,
+          rows: 5,
+        },
+        {
+          key: "product",
+          label: "Product",
+          type: "search",
+          required: true,
+          placeholder: "Search product code or title",
+          apiEndpoint: "/products/search",
+          apiMethod: "get",
+          apiParams: {
+            search: "",
+          },
+          apiHeaders: {
+            "Content-Type": "application/json",
+          },
+          apiBody: {},
+          apiSuccess: (response) => {
+            return response.data;
+          },
+          apiError: (error) => {
+            return error.response.data;
+          },
+        },
       ],
     };
   },

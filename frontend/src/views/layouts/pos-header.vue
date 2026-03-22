@@ -402,9 +402,9 @@ export default {
 
 <style scoped>
 .header-left .logo img {
-    width: 200px; /* Your desired width */
+    width: 200px !important;
 }
 .header-left .logo-small img {
-    width: 40px;
+    width: 40px !important;
 }
 </style>
