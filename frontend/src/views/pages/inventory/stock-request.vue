@@ -41,9 +41,18 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <button class="btn btn-sm btn-outline-dark" title="View" @click="approveRequest(item)">
-                        View
-                      </button>  
+                      <button class="btn btn-sm btn-outline-dark" title="View" @click="viewRequest(item)">
+                        <vue-feather type="eye" size="14"></vue-feather>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-warning"
+                        title="Edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#edit-stock-request"
+                        @click="editRequest(item)"
+                      >
+                        <vue-feather type="edit" size="14"></vue-feather>
+                      </button>
                     </div>
                   </template>
                 </DynamicDataTable>
@@ -54,18 +63,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Add Modal -->
   <add-modal
     :modalId="'add-stock-request'"
     :title="'Add Stock Request'"
     :submitLabel="'Submit'"
     :size="'lg'"
     :fields="fields"
-    :apiEndpoint="'/branches/stock-requests'"
-    :apiMethod="'post'"
-    :successMessage="'Stock request added successfully!'"
-    :errorMessage="'Failed to add stock request'"
-    @success="handleSuccess"
-    @error="handleError"
+    @create="submitStockRequest"
+  />
+
+  <!-- Edit Modal -->
+  <add-modal
+    :modalId="'edit-stock-request'"
+    :title="'Edit Stock Request'"
+    :submitLabel="'Update'"
+    :size="'lg'"
+    :fields="editFields"
+    @create="submitEditRequest"
   />
 
 </template>
@@ -86,6 +102,7 @@ export default {
       items: [],
       loading: false,
       nextRSNo: "",
+      selectedRequest: null,
       headers: [
         { text: "#", value: "id", sortable: true },
         { text: "ID", value: "RSNo", sortable: true },
@@ -119,24 +136,39 @@ export default {
         {
           key: "product",
           label: "Product",
-          type: "search",
+          type: "text",
           required: true,
-          placeholder: "Search product code or title",
-          apiEndpoint: "/products/search",
-          apiMethod: "get",
-          apiParams: {
-            search: "",
-          },
-          apiHeaders: {
-            "Content-Type": "application/json",
-          },
-          apiBody: {},
-          apiSuccess: (response) => {
-            return response.data;
-          },
-          apiError: (error) => {
-            return error.response.data;
-          },
+          placeholder: "Enter product code or title",
+        },
+      ];
+    },
+    editFields() {
+      const req = this.selectedRequest || {};
+      return [
+        {
+          key: "RSNo",
+          label: "Reference #",
+          type: "text",
+          required: true,
+          disabled: true,
+          value: req.RSNo || "",
+        },
+        {
+          key: "remarks",
+          label: "Remarks",
+          type: "textarea",
+          placeholder: "Enter remarks",
+          required: true,
+          rows: 5,
+          value: req.remarks || "",
+        },
+        {
+          key: "product",
+          label: "Product",
+          type: "text",
+          required: true,
+          placeholder: "Enter product code or title",
+          value: req.product || "",
         },
       ];
     },
@@ -151,7 +183,6 @@ export default {
       this.loading = true;
       try {
         const responseData = await api.get("/branches/stock-request/list");
-        // Ensure we always assign an Array to this.warehouses to prevent rendering crashes
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
         console.log("Stock requests fetched:", this.items);
@@ -165,9 +196,7 @@ export default {
     async getNextRSNo() {
       try {
         const responseData = await api.get("/branches/next-rsno");
-        // Log full raw response so we can see the exact shape from the backend
         console.log("[next-rsno RAW response]:", JSON.stringify(responseData));
-        // Try every common nesting pattern
         this.nextRSNo =
           responseData?.RSNo ||
           responseData?.data?.RSNo ||
@@ -181,7 +210,6 @@ export default {
       }
     },
 
-
     getStatusClass(status) {
       switch (status) {
         case "Approved":
@@ -192,19 +220,42 @@ export default {
           return "bg-warning-light";
       }
     },
-    approveRequest(request) {
-      console.log("Approving request:", request);
+
+    editRequest(request) {
+      this.selectedRequest = { ...request };
+      console.log("Editing request:", this.selectedRequest);
     },
-    rejectRequest(request) {
-      console.log("Rejecting request:", request);
+
+    viewRequest(request) {
+      console.log("Viewing request:", request);
     },
-    handleSuccess(response) {
-      console.log("Stock request submitted successfully:", response);
-      this.getStockRequests();
-      this.getNextRSNo();
+
+    async submitStockRequest(formData) {
+      try {
+        console.log("Submitting stock request:", formData);
+        const response = await api.post("/branches/stock-request/add", formData);
+        console.log("Stock request submitted successfully:", response);
+        await this.getStockRequests();
+        await this.getNextRSNo();
+      } catch (error) {
+        console.error("Stock request submission failed:", error.message);
+        console.error("Status:", error.status);
+        console.error("Backend response:", JSON.stringify(error.data));
+      }
     },
-    handleError(error) {
-      console.error("Stock request submission failed:", error);
+
+    async submitEditRequest(formData) {
+      try {
+        console.log("Updating stock request:", formData);
+        const response = await api.put("/branches/stock-request/update", formData);
+        console.log("Stock request updated successfully:", response);
+        await this.getStockRequests();
+        this.selectedRequest = null;
+      } catch (error) {
+        console.error("Stock request update failed:", error.message);
+        console.error("Status:", error.status);
+        console.error("Backend response:", JSON.stringify(error.data));
+      }
     },
   },
 };
