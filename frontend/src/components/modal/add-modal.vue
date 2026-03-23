@@ -210,7 +210,7 @@ export default {
     fields: { type: Array, default: () => [] },
   },
 
-  emits: ["create"],
+  emits: ["create", "success", "error"],
 
   data() {
     return {
@@ -230,6 +230,7 @@ export default {
         this.initFormData(newFields);
       },
       immediate: true,
+      deep: true,
     },
   },
 
@@ -287,7 +288,8 @@ export default {
       const noResult = {};
 
       fields.forEach((f) => {
-        fresh[f.key]    = "";
+        // Seed from field.value if provided, otherwise empty string
+        fresh[f.key]    = f.value !== undefined && f.value !== null ? f.value : "";
         queries[f.key]  = "";
         results[f.key]  = [];
         loading[f.key]  = false;
@@ -372,6 +374,7 @@ export default {
 
     handleSubmit() {
       this.$emit("create", { ...this.formData });
+      this.$emit("success", { ...this.formData });
       this.resetForm();
     },
 

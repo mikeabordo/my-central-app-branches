@@ -60,7 +60,7 @@
     :submitLabel="'Submit'"
     :size="'lg'"
     :fields="fields"
-    :apiEndpoint="'/branches/stock-request'"
+    :apiEndpoint="'/branches/stock-requests'"
     :apiMethod="'post'"
     :successMessage="'Stock request added successfully!'"
     :errorMessage="'Failed to add stock request'"
@@ -85,6 +85,7 @@ export default {
     return {
       items: [],
       loading: false,
+      nextRSNo: "",
       headers: [
         { text: "#", value: "id", sortable: true },
         { text: "ID", value: "RSNo", sortable: true },
@@ -94,13 +95,18 @@ export default {
         { text: "Remarks", value: "remarks", sortable: true },
         { text: "Actions", value: "actions" },
       ],
-      fields: [
+    };
+  },
+  computed: {
+    fields() {
+      return [
         {
           key: "RSNo",
           label: "Reference #",
           type: "text",
           required: true,
           disabled: true,
+          value: this.nextRSNo,
         },
         {
           key: "remarks",
@@ -132,11 +138,12 @@ export default {
             return error.response.data;
           },
         },
-      ],
-    };
+      ];
+    },
   },
   created() {
     this.getStockRequests();
+    this.getNextRSNo();
   },
   methods: {
 
@@ -152,6 +159,25 @@ export default {
         console.error("Failed to fetch stock requests:", error);
       } finally {
         this.loading = false;
+      }
+    },
+
+    async getNextRSNo() {
+      try {
+        const responseData = await api.get("/branches/next-rsno");
+        // Log full raw response so we can see the exact shape from the backend
+        console.log("[next-rsno RAW response]:", JSON.stringify(responseData));
+        // Try every common nesting pattern
+        this.nextRSNo =
+          responseData?.RSNo ||
+          responseData?.data?.RSNo ||
+          responseData?.nextRSNo ||
+          responseData?.data?.nextRSNo ||
+          responseData?.data ||
+          "";
+        console.log("Next RSNo fetched:", this.nextRSNo);
+      } catch (error) {
+        console.error("Failed to fetch next RSNo:", error);
       }
     },
 
@@ -171,6 +197,14 @@ export default {
     },
     rejectRequest(request) {
       console.log("Rejecting request:", request);
+    },
+    handleSuccess(response) {
+      console.log("Stock request submitted successfully:", response);
+      this.getStockRequests();
+      this.getNextRSNo();
+    },
+    handleError(error) {
+      console.error("Stock request submission failed:", error);
     },
   },
 };
