@@ -89,7 +89,7 @@ export default {
 
 /* Give the sidebar-menu right padding so text doesn't go under the scrollbar */
 #sidebar .scroll-area > .sidebar-menu {
-  padding-right: 0.5px;
+  padding-right: 68px;
 }
 
 /* Fix: active tab background should not bleed to the right sidebar border (expanded sidebar only) */
