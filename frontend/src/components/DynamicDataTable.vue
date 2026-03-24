@@ -1,7 +1,7 @@
 <template>
   <div class="dynamic-datatable-wrapper">
     <!-- Search Input (optional) -->
-    <div v-if="showSearch" class="datatable-search mb-3 position-relative" style="max-width: 300px;">
+    <div v-if="searchField" class="datatable-search mb-3 position-relative" style="max-width: 300px;">
       <vue-feather type="search" class="search-icon"></vue-feather>
       <input
         v-model="internalSearchValue"
@@ -57,13 +57,17 @@ export default {
       required: true,
       default: () => [],
     },
-    showSearch: {
+    searchField: {
       type: Boolean,
       default: true,
     },
     searchPlaceholder: {
       type: String,
       default: "Search...",
+    },
+    searchValue: {
+      type: String,
+      default: "",
     },
     rowsPerPage: {
       type: Number,
@@ -76,8 +80,16 @@ export default {
   },
   data() {
     return {
-      internalSearchValue: "",
+      internalSearchValue: this.searchValue,
     };
+  },
+  watch: {
+    searchValue(newVal) {
+      this.internalSearchValue = newVal;
+    },
+    internalSearchValue(newVal) {
+      this.$emit("update:searchValue", newVal);
+    },
   },
 };
 </script>

@@ -39137,3 +39137,14 @@ label span {
   box-shadow: 0 0 0 3px rgba(118, 56, 255, 0.15);
   padding: calc(0.5rem - 1px) calc(0.85rem - 1px);
 }
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}

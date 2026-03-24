@@ -10,14 +10,12 @@
             <h6>Manage and track inventory replenishment requests.</h6>
           </div>
           <div class="page-btn">
-            <button
-              type="button"
+            <router-link
+              to="/inventory/stock-request/add"
               class="btn btn-added"
-              data-bs-toggle="modal"
-              data-bs-target="#add-stock-request"
             >
               <vue-feather type="plus-circle" class="me-2"></vue-feather>New Stock Request
-            </button>
+            </router-link>
           </div>
         </div>
 
@@ -50,15 +48,6 @@
                       >
                         <vue-feather type="eye" size="14"></vue-feather>
                       </button>
-                      <button
-                        class="btn btn-sm btn-outline-warning"
-                        title="Edit"
-                        data-bs-toggle="modal"
-                        data-bs-target="#edit-stock-request"
-                        @click="editRequest(item)"
-                      >
-                        <vue-feather type="edit" size="14"></vue-feather>
-                      </button>
                     </div>
                   </template>
                 </DynamicDataTable>
@@ -79,33 +68,25 @@
     :summaryFields="summaryFields"
     :columns="viewColumns"
     :tableItems="viewTableItems"
-  />
+  >
+    <!-- Custom slot for the 'action' column -->
+    <template #col-action="row">
+        <button 
+          class="btn btn-sm btn-outline-danger" 
+          title="Remove Item"
+          @click="removeItemDetail(row)"
+        >
+          <vue-feather type="trash-2" size="14"></vue-feather>
+        </button>
+    </template>
+  </view-item-table>
 
-  <!-- Add Modal -->
-  <add-modal
-    :modalId="'add-stock-request'"
-    :title="'Add Stock Request'"
-    :submitLabel="'Submit'"
-    :size="'lg'"
-    :fields="fields"
-    @create="submitStockRequest"
-  />
 
-  <!-- Edit Modal -->
-  <edit-modal
-    :modalId="'edit-stock-request'"
-    :title="'Edit Stock Request'"
-    :item="selectedRequest"
-    :size="'lg'"
-    :fields="editFields"
-    @update="submitEditRequest"
-  />
 
 </template>
 
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
-import AddModal from "@/components/modal/add-modal.vue";
 import EditModal from "@/components/action-modal/edit-modal.vue";
 import ViewItemTable from "@/components/action-modal/view-item-table.vue";
 import api from "@/services/api";
@@ -114,7 +95,6 @@ export default {
   name: "StockRequest",
   components: {
     DynamicDataTable,
-    AddModal,
     EditModal,
     ViewItemTable,
   },
@@ -122,7 +102,6 @@ export default {
     return {
       items: [],
       loading: false,
-      nextRSNo: "",
       selectedRequest: null,
       headers: [
         { text: "#", value: "id", sortable: true },
@@ -136,61 +115,6 @@ export default {
     };
   },
   computed: {
-    fields() {
-      return [
-        {
-          key: "RSNo",
-          label: "Reference #",
-          type: "text",
-          required: true,
-          disabled: true,
-          value: this.nextRSNo,
-        },
-        {
-          key: "remarks",
-          label: "Remarks",
-          type: "textarea",
-          placeholder: "Enter remarks",
-          required: true,
-          rows: 5,
-        },
-        {
-          key: "product",
-          label: "Product",
-          type: "text",
-          required: true,
-          placeholder: "Enter product code or title",
-        },
-      ];
-    },
-      
-
-    editFields() {
-      return [
-        {
-          key: "RSNo",
-          label: "Reference #",
-          type: "text",
-          disabled: true,
-        },
-        {
-          key: "remarks",
-          label: "Remarks",
-          type: "textarea",
-          placeholder: "Enter remarks",
-          required: true,
-          rows: 5,
-        },
-        {
-          key: "product",
-          label: "Product",
-          type: "text",
-          required: true,
-          placeholder: "Enter product code or title",
-        },
-      ];
-    },
-
     summaryFields() {
       return [
         { key: "RSNo", label: "Reference #" },
@@ -203,7 +127,7 @@ export default {
 
     viewColumns() {
       return [
-        { label: "#", key: "index", width: "50px" },
+        { label: "#", key: "id", width: "50px" },
         { label: "Item Key", key: "itemKey" },
         { label: "Book Details", key: "bookDetails" },
         { label: "Qty", key: "qty", width: "80px" },
@@ -213,16 +137,34 @@ export default {
     },
 
     viewTableItems() {
+      // Mock data for previewing - the 'action' property is no longer needed here 
+      // as it's handled by the slot in the template
+      return [
+        {
+          id: "1",
+          itemKey: "ITM-001",
+          bookDetails: "Javascript Patterns",
+          qty: "10",
+          fulfilled: "5",
+        },
+        {
+          id: "2",
+          itemKey: "ITM-002",
+          bookDetails: "Eloquent JavaScript",
+          qty: "20",
+          fulfilled: "10",
+        },
+      ];
+
       if (!this.selectedRequest || !this.selectedRequest.items) return [];
       return this.selectedRequest.items.map((item, i) => ({
-        index: i + 1,
+        id: i + 1,
         ...item,
       }));
     },
   },
   created() {
     this.getStockRequests();
-    this.getNextRSNo();
   },
   methods: {
 
@@ -240,22 +182,6 @@ export default {
       }
     },
 
-    async getNextRSNo() {
-      try {
-        const responseData = await api.get("/branches/next-rsno");
-        console.log("[next-rsno RAW response]:", JSON.stringify(responseData));
-        this.nextRSNo =
-          responseData?.RSNo ||
-          responseData?.data?.RSNo ||
-          responseData?.nextRSNo ||
-          responseData?.data?.nextRSNo ||
-          responseData?.data ||
-          "";
-        console.log("Next RSNo fetched:", this.nextRSNo);
-      } catch (error) {
-        console.error("Failed to fetch next RSNo:", error);
-      }
-    },
 
     getStatusClass(status) {
       switch (status) {
@@ -278,19 +204,11 @@ export default {
       console.log("Viewing request:", this.selectedRequest);
     },
 
-    async submitStockRequest(formData) {
-      try {
-        console.log("Submitting stock request:", formData);
-        const response = await api.post("/branches/stock-request/add", formData);
-        console.log("Stock request submitted successfully:", response);
-        await this.getStockRequests();
-        await this.getNextRSNo();
-      } catch (error) {
-        console.error("Stock request submission failed:", error.message);
-        console.error("Status:", error.status);
-        console.error("Backend response:", JSON.stringify(error.data));
-      }
+    removeItemDetail(item) {
+      console.log("Removing item in modal table:", item);
+      // Implementation logic...
     },
+
 
     async submitEditRequest(formData) {
       try {

@@ -20,6 +20,11 @@ export default [
                 component: () => import('@/views/pages/inventory/stock-request.vue')
             },
             {
+                path: 'stock-request/add',
+                name: 'add-stock-request',
+                component: () => import('@/components/form-path/add-stock-request.vue')
+            },
+            {
                 path: 'incoming-stocks',
                 name: 'incoming-stocks',
                 component: () => import('@/views/pages/inventory/incoming-stocks.vue')

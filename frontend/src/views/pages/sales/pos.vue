@@ -31,26 +31,16 @@
                 </div>
 
                 <form @submit.prevent="handleSearchInvoice">
-                  <div class="pos-input-wrapper" :class="{ 'is-focused': isInputFocused, 'has-value': invoiceNumber.length > 0 }">
+                  <div class="pos-input-wrapper"
+                    :class="{ 'is-focused': isInputFocused, 'has-value': invoiceNumber.length > 0 }">
                     <div class="pos-input-group">
                       <span class="pos-input-icon">
                         <vue-feather type="hash" size="18"></vue-feather>
                       </span>
-                      <input
-                        type="text"
-                        class="pos-input"
-                        id="salesInvoiceNumber"
-                        v-model="invoiceNumber"
-                        placeholder="Search by Invoice Number"
-                        @focus="isInputFocused = true"
-                        @blur="isInputFocused = false"
-                        autocomplete="off"
-                      />
-                      <button
-                        type="submit"
-                        class="pos-scan-btn"
-                        title="Search Invoice"
-                      >
+                      <input type="text" class="pos-input" id="salesInvoiceNumber" v-model="invoiceNumber"
+                        placeholder="Search by Invoice Number" @focus="isInputFocused = true"
+                        @blur="isInputFocused = false" autocomplete="off" />
+                      <button type="submit" class="pos-scan-btn" title="Search Invoice">
                         <vue-feather type="search" size="16"></vue-feather>
                       </button>
                     </div>
@@ -60,24 +50,155 @@
             </div>
           </div>
         </div>
-        <!-- Content -->
-         <div v-if="$route.query.invoice" class="pos-content-placeholder mt-3">
-           <div class="card p-4">
-             <h4 class="text-muted mb-0">Content Goes Here</h4>
-           </div>
-         </div>
+
+        <!-- Scan -->
+        <div v-if="$route.query.invoice" class="pos-content-placeholder mt-4 d-flex flex-column gap-4 pb-5">
+          <div class="card p-3">
+            <div class="row">
+              <div class="col-md-5">
+                <div class="form-group">
+                  <label class="form-label fw-600 small mb-1">Scan</label>
+                  <input type="text" class="form-control" v-model="customerName" placeholder="Enter item">
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <label class="form-label fw-600 small mb-1">Qty</label>
+                  <input type="text" class="form-control" v-model="customerName" placeholder="Enter qty">
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <button class="btn btn-primary mt-4">Scan</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="card p-3">
+            <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
+              <!-- Custom slot for Actions -->
+              <template #item-actions="{ id }">
+                <div class="d-flex gap-2">
+                  <button @click="handleApprove(id)" class="btn btn-sm btn-success" title="Approve">
+                    <vue-feather type="check" size="14"></vue-feather>
+                  </button>
+                  <button @click="handleReject(id)" class="btn btn-sm btn-danger" title="Reject">
+                    <vue-feather type="x" size="14"></vue-feather>
+                  </button>
+                </div>
+              </template>
+            </dynamic-data-table>
+          </div>
+          <!-- Fields -->
+          <div class="card p-3 border-1">
+            <form @submit.prevent="handleCompleteSale">
+              <div class="row g-3">
+                <!-- Customer -->
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">Sold To</label>
+                    <input type="text" class="form-control" v-model="customerName" placeholder="Enter name">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">TIN</label>
+                    <input type="text" class="form-control" v-model="customerTin" placeholder="Enter tin">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">Business Style</label>
+                    <input type="text" class="form-control" v-model="customerBusinessStyle"
+                      placeholder="Enter business style">
+                  </div>
+                </div>
+
+                <!-- Address -->
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">Address</label>
+                    <input type="text" class="form-control" v-model="customerAddress" placeholder="Enter address">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">School/Company</label>
+                    <input type="text" class="form-control" v-model="schoolCompany" placeholder="Enter school/company">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row gx-2 mt-3">
+                <!-- Plastic Cover -->
+                <div class="col-2">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">Plastic Cover</label>
+                    <input type="number" class="form-control" v-model="plasticCover" placeholder="Enter amount">
+                  </div>
+                </div>
+                <div class="col-2">
+                  <div class="form-group">
+                    <label class="form-label fw-600 small mb-1">Qty</label>
+                    <input type="number" class="form-control" v-model="plasticCoverQty" placeholder="Enter qty">
+                  </div>
+                </div>
+
+              </div>
+              <!-- Actions -->
+              <div class="col-12 d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-light px-4" @click="handleSaveDraft">Save as Draft</button>
+                <button type="submit" class="btn btn-warning px-4 text-white hover-up shadow-sm">
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+
+import DynamicDataTable from "@/components/DynamicDataTable.vue";
+
 export default {
   name: "PosSales",
+  components: {
+    DynamicDataTable,
+  },
   data() {
     return {
       invoiceNumber: "",
       isInputFocused: false,
+      headers: [
+        { text: "#", value: "id" },
+        { text: "Item Key", value: "itemKey" },
+        { text: "Description", value: "description" },
+        { text: "Price", value: "price" },
+        { text: "Qty", value: "qty" },
+        { text: "Discount", value: "discount" },
+        { text: "Amount", value: "amount" },
+      ],
+      items: [
+        { id: "REQ-001", itemKey: "ITM-001", description: "The Great Gatsby", price: "100", qty: "10", discount: "10", amount: "900" },
+        { id: "REQ-002", itemKey: "ITM-002", description: "To Kill a Mockingbird", price: "200", qty: "20", discount: "20", amount: "1800" },
+        { id: "REQ-003", itemKey: "ITM-003", description: "1984", price: "300", qty: "30", discount: "30", amount: "2700" },
+      ],
+      loading: false,
+      // Transaction Form Data
+      customerName: "",
+      customerTin: "",
+      customerBusinessStyle: "",
+      customerAddress: "",
+      schoolCompany: "",
+      plasticCover: "",
+      plasticCoverQty: "",
     };
   },
 
@@ -91,7 +212,7 @@ export default {
   methods: {
     handleSearchInvoice() {
       const invoice = this.invoiceNumber.trim();
-      
+
       if (invoice) {
         // Update URL with invoice query
         this.$router.replace({ name: "pos", query: { invoice } });
@@ -103,6 +224,14 @@ export default {
       console.log("Searching for invoice:", invoice || "(Cleared)");
       // TODO: fetch invoice data from API using `invoice`
     },
+    handleCompleteSale() {
+      console.log("Submitting transaction for:", this.customerName, this.customerAddress);
+      alert(`Transaction for ${this.customerName || 'Walk-in Customer'} submitted successfully!`);
+    },
+    handleSaveDraft() {
+      console.log("Saving draft for:", this.customerName);
+      alert("Draft saved!");
+    }
   },
 };
 </script>
@@ -117,6 +246,7 @@ export default {
   overflow: hidden;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
+
 .pos-invoice-card:hover {
   box-shadow: 0 6px 24px rgba(27, 40, 80, 0.10);
   transform: translateY(-2px);
@@ -129,9 +259,17 @@ export default {
   background-size: 200% 100%;
   animation: shimmer 3s ease-in-out infinite;
 }
+
 @keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .pos-card-body {
@@ -145,6 +283,7 @@ export default {
   gap: 14px;
   margin-bottom: 24px;
 }
+
 .pos-card-icon-badge {
   width: 42px;
   height: 42px;
@@ -156,6 +295,7 @@ export default {
   justify-content: center;
   flex-shrink: 0;
 }
+
 .pos-card-title {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
@@ -164,6 +304,7 @@ export default {
   margin: 0;
   line-height: 1.3;
 }
+
 .pos-card-subtitle {
   font-size: 12.5px;
   color: #8c94a5;
@@ -175,6 +316,7 @@ export default {
 .pos-input-wrapper {
   position: relative;
 }
+
 .pos-input-group {
   display: flex;
   align-items: center;
@@ -197,6 +339,7 @@ export default {
   background: #ffffff;
   border-color: #d0d5e0;
 }
+
 .pos-input-wrapper.has-value.is-focused .pos-input-group {
   border-color: #FF9F43;
 }
@@ -210,6 +353,7 @@ export default {
   color: #b0b7c3;
   transition: color 0.25s ease;
 }
+
 .pos-input-wrapper.is-focused .pos-input-icon {
   color: #FF9F43;
 }
@@ -227,6 +371,7 @@ export default {
   letter-spacing: 0.3px;
   outline: none;
 }
+
 .pos-input::placeholder {
   color: #b0b7c3;
   font-weight: 400;
@@ -247,11 +392,44 @@ export default {
   flex-shrink: 0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .pos-scan-btn:hover {
   transform: scale(1.07);
   box-shadow: 0 3px 10px rgba(255, 159, 67, 0.35);
 }
+
 .pos-scan-btn:active {
   transform: scale(0.97);
+}
+
+/* ── Transaction Form Helpers ─────────────────────── */
+.fw-600 {
+  font-weight: 600;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.hover-up {
+  transition: transform 0.2s ease;
+}
+
+.hover-up:hover {
+  transform: translateY(-2px);
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.form-label {
+  letter-spacing: 0.025em;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #FF9F43;
+  box-shadow: 0 0 0 0.2rem rgba(255, 159, 67, 0.15);
 }
 </style>
