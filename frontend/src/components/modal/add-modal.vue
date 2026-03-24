@@ -173,7 +173,7 @@ export default {
      *
      * Omit (or leave "") for the default Bootstrap width (~500 px).
      */
-    size: { type: String, default: "" },
+    size: { type: String, default: "md" },
 
     /**
      * Field definitions array. Each object can be:
@@ -237,12 +237,12 @@ export default {
   computed: {
     /** Adds a Bootstrap size class when size is a preset keyword. */
     bsDialogClass() {
-      const presets = { sm: "modal-sm", lg: "modal-lg", xl: "modal-xl" };
+      const presets = { sm: "modal-sm", md: "", lg: "modal-lg", xl: "modal-xl" };
       return presets[this.size] || "";
     },
     /** Applies a custom max-width when size is a raw CSS value (e.g. "700px"). */
     customWidthStyle() {
-      const presets = ["sm", "lg", "xl", ""];
+      const presets = ["sm", "md", "lg", "xl", ""];
       return presets.includes(this.size) ? {} : { maxWidth: this.size };
     },
   },

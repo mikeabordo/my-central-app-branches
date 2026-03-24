@@ -41,7 +41,13 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <button class="btn btn-sm btn-outline-dark" title="View" @click="viewRequest(item)">
+                      <button
+                        class="btn btn-sm btn-outline-dark"
+                        title="View"
+                        data-bs-toggle="modal"
+                        data-bs-target="#view-stock-request"
+                        @click="viewRequest(item)"
+                      >
                         <vue-feather type="eye" size="14"></vue-feather>
                       </button>
                       <button
@@ -64,6 +70,17 @@
     </div>
   </div>
 
+  <!-- View Modal -->
+  <view-item-table
+    :modalId="'view-stock-request'"
+    :title="'View Stock Request'"
+    :item="selectedRequest"
+    :size="'xl'"
+    :summaryFields="summaryFields"
+    :columns="viewColumns"
+    :tableItems="viewTableItems"
+  />
+
   <!-- Add Modal -->
   <add-modal
     :modalId="'add-stock-request'"
@@ -75,13 +92,13 @@
   />
 
   <!-- Edit Modal -->
-  <add-modal
+  <edit-modal
     :modalId="'edit-stock-request'"
     :title="'Edit Stock Request'"
-    :submitLabel="'Update'"
+    :item="selectedRequest"
     :size="'lg'"
     :fields="editFields"
-    @create="submitEditRequest"
+    @update="submitEditRequest"
   />
 
 </template>
@@ -89,6 +106,8 @@
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
 import AddModal from "@/components/modal/add-modal.vue";
+import EditModal from "@/components/action-modal/edit-modal.vue";
+import ViewItemTable from "@/components/action-modal/view-item-table.vue";
 import api from "@/services/api";
 
 export default {
@@ -96,6 +115,8 @@ export default {
   components: {
     DynamicDataTable,
     AddModal,
+    EditModal,
+    ViewItemTable,
   },
   data() {
     return {
@@ -142,16 +163,15 @@ export default {
         },
       ];
     },
+      
+
     editFields() {
-      const req = this.selectedRequest || {};
       return [
         {
           key: "RSNo",
           label: "Reference #",
           type: "text",
-          required: true,
           disabled: true,
-          value: req.RSNo || "",
         },
         {
           key: "remarks",
@@ -160,7 +180,6 @@ export default {
           placeholder: "Enter remarks",
           required: true,
           rows: 5,
-          value: req.remarks || "",
         },
         {
           key: "product",
@@ -168,9 +187,37 @@ export default {
           type: "text",
           required: true,
           placeholder: "Enter product code or title",
-          value: req.product || "",
         },
       ];
+    },
+
+    summaryFields() {
+      return [
+        { key: "RSNo", label: "Reference #" },
+        { key: "toBranch", label: "Branch" },
+        { key: "status", label: "Status" },
+        { key: "createdAt", label: "Date" },
+        { key: "remarks", label: "Remarks" },
+      ];
+    },
+
+    viewColumns() {
+      return [
+        { label: "#", key: "index", width: "50px" },
+        { label: "Item Key", key: "itemKey" },
+        { label: "Book Details", key: "bookDetails" },
+        { label: "Qty", key: "qty", width: "80px" },
+        { label: "Fulfilled", key: "fulfilled", width: "80px" },
+        { label: "Action", key: "action", width: "80px" },
+      ];
+    },
+
+    viewTableItems() {
+      if (!this.selectedRequest || !this.selectedRequest.items) return [];
+      return this.selectedRequest.items.map((item, i) => ({
+        index: i + 1,
+        ...item,
+      }));
     },
   },
   created() {
@@ -227,7 +274,8 @@ export default {
     },
 
     viewRequest(request) {
-      console.log("Viewing request:", request);
+      this.selectedRequest = { ...request };
+      console.log("Viewing request:", this.selectedRequest);
     },
 
     async submitStockRequest(formData) {
