@@ -26,6 +26,9 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
+                      <router-link :to="`/inventory/book-list/view/${item.id}`" class="btn btn-sm btn-outline-dark" title="View">
+                         <vue-feather type="eye" size="14"></vue-feather>
+                      </router-link>
                       <button class="btn btn-sm btn-outline-warning" @click="editBook(item)">
                         <vue-feather type="edit-2" size="14"></vue-feather>
                       </button>
