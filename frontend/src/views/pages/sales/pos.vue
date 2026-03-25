@@ -75,98 +75,178 @@
             </div>
           </div>
 
-          <!-- Table -->
-          <div class="card p-3">
-            <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
-              <!-- Custom slot for Actions -->
-              <template #item-actions="{ id }">
-                <div class="d-flex gap-2">
-                  <button @click="handleApprove(id)" class="btn btn-sm btn-success" title="Approve">
-                    <vue-feather type="check" size="14"></vue-feather>
-                  </button>
-                  <button @click="handleReject(id)" class="btn btn-sm btn-danger" title="Reject">
-                    <vue-feather type="x" size="14"></vue-feather>
-                  </button>
+          <!-- Main Content Row -->
+          <div class="row g-4 flex-grow-1">
+            <!-- Left Column: Table & Fields -->
+            <div class="col-lg-9 d-flex flex-column gap-4">
+
+              <!-- Table -->
+              <div class="card p-3 flex-grow-1 mb-0">
+                <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
+                  <!-- Custom slot for Actions -->
+                  <template #item-actions="{ id }">
+                    <div class="d-flex gap-2">
+                      <button @click="handleApprove(id)" class="btn btn-sm btn-success" title="Approve">
+                        <vue-feather type="check" size="14"></vue-feather>
+                      </button>
+                      <button @click="handleReject(id)" class="btn btn-sm btn-danger" title="Reject">
+                        <vue-feather type="x" size="14"></vue-feather>
+                      </button>
+                    </div>
+                  </template>
+                </dynamic-data-table>
+              </div>
+
+              <!-- Fields -->
+              <div class="card p-3 border-1 mb-0">
+                <form @submit.prevent="handleCompleteSale">
+                  <div class="row g-3">
+                    <!-- Customer -->
+                    <div class="col-md-4">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">Sold To</label>
+                        <input type="text" class="form-control" v-model="customerName" placeholder="Enter name">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">TIN</label>
+                        <input type="text" class="form-control" v-model="customerTin" placeholder="Enter tin">
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">Business Style</label>
+                        <input type="text" class="form-control" v-model="customerBusinessStyle"
+                          placeholder="Enter business style">
+                      </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="col-md-7">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">Address</label>
+                        <input type="text" class="form-control" v-model="customerAddress" placeholder="Enter address">
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">School/Company</label>
+                        <input type="text" class="form-control" v-model="schoolCompany"
+                          placeholder="Enter school/company">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row gx-2 mt-3">
+                    <!-- Plastic Cover -->
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">Plastic Cover</label>
+                        <input type="number" class="form-control" v-model="plasticCover" placeholder="Enter amount">
+                      </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                      <div class="form-group mb-0">
+                        <label class="form-label fw-600 small mb-1">Qty</label>
+                        <input type="number" class="form-control" v-model="plasticCoverQty" placeholder="Enter qty">
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </div>
+
+            <!-- Right Column: Payment Method -->
+            <div class="col-lg-3">
+              <div class="card p-3 border-1 mb-0 h-100">
+                <h6 class="fw-600 mb-3">Payment Method</h6>
+                <div class="payment-methods-grid">
+                  <!-- Options -->
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Cash' }">
+                    <input type="radio" name="payment" value="Cash" v-model="paymentMethod" class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-cash">
+                        <vue-feather type="dollar-sign" size="24"></vue-feather>
+                      </div>
+                      <span class="tile-label">Cash</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Debit/Credit Terminal' }">
+                    <input type="radio" name="payment" value="Debit/Credit Terminal" v-model="paymentMethod"
+                      class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-terminal">
+                        <vue-feather type="credit-card" size="24"></vue-feather>
+                      </div>
+                      <span class="tile-label">Debit/Credit Terminal</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Maya QR' }">
+                    <input type="radio" name="payment" value="Maya QR" v-model="paymentMethod" class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-maya bg-black">
+                        <img src="@/assets/img/logo/maya.svg" alt="Maya" class="img-fluid">
+                      </div>
+                      <span class="tile-label">Maya QR</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Maya Terminal' }">
+                    <input type="radio" name="payment" value="Maya Terminal" v-model="paymentMethod" class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-maya bg-black">
+                        <img src="@/assets/img/logo/maya.svg" alt="Maya" class="img-fluid">
+                      </div>
+                      <span class="tile-label">Maya Terminal</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BPI' }">
+                    <input type="radio" name="payment" value="BPI" v-model="paymentMethod" class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-bpi bg-white">
+                        <img src="@/assets/img/logo/bpi.svg" alt="BPI" class="img-fluid">
+                      </div>
+                      <span class="tile-label">BPI</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BDO' }">
+                    <input type="radio" name="payment" value="BDO" v-model="paymentMethod" class="d-none">
+                    <div class="tile-content">
+                      <div class="tile-icon is-bdo bg-blue">
+                        <img src="@/assets/img/logo/bdo.svg" alt="BDO" class="img-fluid">
+                      </div>
+                      <span class="tile-label">BDO</span>
+                    </div>
+                  </label>
+                  <div class="d-flex justify-content-between my-2 ">
+                    <h4 class="fw-600">Total Payment: </h4>
+                    <h4 class="text-orange fw-600 pr-5">{{ totalPayment }}</h4>
+                  </div>
                 </div>
-              </template>
-            </dynamic-data-table>
+              </div>
+            </div>
           </div>
-          <!-- Fields -->
-          <div class="card p-3 border-1">
-            <form @submit.prevent="handleCompleteSale">
-              <div class="row g-3">
-                <!-- Customer -->
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">Sold To</label>
-                    <input type="text" class="form-control" v-model="customerName" placeholder="Enter name">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">TIN</label>
-                    <input type="text" class="form-control" v-model="customerTin" placeholder="Enter tin">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">Business Style</label>
-                    <input type="text" class="form-control" v-model="customerBusinessStyle"
-                      placeholder="Enter business style">
-                  </div>
-                </div>
-
-                <!-- Address -->
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">Address</label>
-                    <input type="text" class="form-control" v-model="customerAddress" placeholder="Enter address">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">School/Company</label>
-                    <input type="text" class="form-control" v-model="schoolCompany" placeholder="Enter school/company">
-                  </div>
-                </div>
-              </div>
-
-              <div class="row gx-2 mt-3">
-                <!-- Plastic Cover -->
-                <div class="col-2">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">Plastic Cover</label>
-                    <input type="number" class="form-control" v-model="plasticCover" placeholder="Enter amount">
-                  </div>
-                </div>
-                <div class="col-2">
-                  <div class="form-group">
-                    <label class="form-label fw-600 small mb-1">Qty</label>
-                    <input type="number" class="form-control" v-model="plasticCoverQty" placeholder="Enter qty">
-                  </div>
-                </div>
-
-              </div>
-              <!-- Actions -->
-              <div class="col-12 d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                <button type="button" class="btn btn-light px-4" @click="handleSaveDraft">Save as Draft</button>
-                <button type="submit" class="btn btn-warning px-4 text-white hover-up shadow-sm">
-                  Submit
-                </button>
-              </div>
-            </form>
+          <!-- Actions -->
+          <div class="mt-1 pt-1 d-flex justify-content-end gap-2 mt-auto">
+            <button type="button" class="btn btn-light px-4" @click="handleSaveDraft">Save as Draft</button>
+            <button type="submit" class="btn btn-warning px-4 text-white hover-up shadow-sm">
+              Submit
+            </button>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
-
 export default {
   name: "PosSales",
   components: {
@@ -199,6 +279,7 @@ export default {
       schoolCompany: "",
       plasticCover: "",
       plasticCoverQty: "",
+      paymentMethod: "Cash",
     };
   },
 
@@ -431,5 +512,121 @@ export default {
 .form-select:focus {
   border-color: #FF9F43;
   box-shadow: 0 0 0 0.2rem rgba(255, 159, 67, 0.15);
+}
+
+/* ── Payment Method Tiles ────────────────────────── */
+.payment-methods-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-method-tile {
+  cursor: pointer;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.tile-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  border: 1.5px solid #edf2f7;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tile-icon {
+  width: 64px;
+  height: 64px;
+  background: #ffffff;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c94a5;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.tile-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.tile-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1B2850;
+  transition: color 0.25s ease;
+}
+
+/* Hover State */
+.payment-method-tile:hover .tile-content {
+  background: #ffffff;
+  border-color: #d0d5e0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(27, 40, 80, 0.04);
+}
+
+/* Active / Selected State */
+.payment-method-tile.active .tile-content {
+  background: #ffffff;
+  border-color: #FF9F43;
+  box-shadow: 0 0 0 1px #FF9F43, 0 8px 20px rgba(255, 159, 67, 0.10);
+}
+
+.payment-method-tile.active .tile-icon {
+  border-color: #cbd5e1;
+}
+
+.payment-method-tile.active .tile-label {
+  color: #FF9F43;
+}
+
+/* ── Icon Variants (Inactive) ───────────────────── */
+.tile-icon.is-cash {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.tile-icon.is-terminal {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.tile-icon.is-maya {
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.tile-icon.is-bpi {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.tile-icon.is-bdo {
+  color: #1e3a8a;
+  background: rgba(30, 58, 138, 0.08);
+  border-color: rgba(30, 58, 138, 0.2);
+}
+
+/* ── Active State Overrides ─────────────────────── */
+.payment-method-tile.active .tile-icon.is-cash,
+.payment-method-tile.active .tile-icon.is-terminal,
+.payment-method-tile.active .tile-icon.is-maya,
+.payment-method-tile.active .tile-icon.is-bpi,
+.payment-method-tile.active .tile-icon.is-bdo {
+  border-width: 1.5px;
 }
 </style>
