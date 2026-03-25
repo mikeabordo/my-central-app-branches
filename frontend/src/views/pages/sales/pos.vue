@@ -9,7 +9,7 @@
           <div class="row align-items-center">
             <div class="col-sm-12">
               <h4 class="page-title">Point of Sales (POS)</h4>
-              <h6 class="page-subtitle">Enter or scan the invoice number to begin</h6>
+              <h6 class="page-subtitle">Enter the invoice number to begin</h6>
             </div>
           </div>
         </div>
@@ -51,50 +51,68 @@
           </div>
         </div>
 
-        <!-- Scan -->
+        <!-- POS Transaction Content -->
         <div v-if="$route.query.invoice" class="pos-content-placeholder mt-4 d-flex flex-column gap-4 pb-5">
-          <div class="card p-3">
-            <div class="row">
-              <div class="col-md-5">
-                <div class="form-group">
-                  <label class="form-label fw-600 small mb-1">Scan</label>
-                  <input type="text" class="form-control" v-model="customerName" placeholder="Enter item">
-                </div>
-              </div>
-              <div class="col-md-2">
-                <div class="form-group">
-                  <label class="form-label fw-600 small mb-1">Qty</label>
-                  <input type="text" class="form-control" v-model="customerName" placeholder="Enter qty">
-                </div>
-              </div>
-              <div class="col-md-2">
-                <div class="form-group">
-                  <button class="btn btn-primary mt-4">Scan</button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Main Content Row -->
           <div class="row g-4 flex-grow-1">
             <!-- Left Column: Table & Fields -->
             <div class="col-lg-9 d-flex flex-column gap-4">
 
-              <!-- Table -->
-              <div class="card p-3 flex-grow-1 mb-0">
-                <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
-                  <!-- Custom slot for Actions -->
-                  <template #item-actions="{ id }">
-                    <div class="d-flex gap-2">
-                      <button @click="handleApprove(id)" class="btn btn-sm btn-success" title="Approve">
-                        <vue-feather type="check" size="14"></vue-feather>
-                      </button>
-                      <button @click="handleReject(id)" class="btn btn-sm btn-danger" title="Reject">
-                        <vue-feather type="x" size="14"></vue-feather>
-                      </button>
+              <!-- Table & Scan -->
+              <div class="card p-4 flex-grow-1 mb-0 border-0 shadow-sm">
+                <!-- Scan Section -->
+                <div class="row mb-4 g-3 align-items-end">
+                  <div class="col">
+                    <div class="form-group mb-0">
+                      <label class="form-label fw-600 small mb-2 text-muted">Scan or Search Item</label>
+                      <div class="pos-input-wrapper"
+                        :class="{ 'is-focused': isScanFocused, 'has-value': scanItem.length > 0 }">
+                        <div class="pos-input-group">
+                          <span class="pos-input-icon">
+                            <vue-feather class="text-dark" type="search" size="16"></vue-feather>
+                          </span>
+                          <input type="text" class="pos-input" v-model="scanItem" placeholder="Enter item key or title"
+                            @focus="isScanFocused = true" @blur="isScanFocused = false" autocomplete="off">
+                        </div>
+                      </div>
                     </div>
-                  </template>
-                </dynamic-data-table>
+                  </div>
+                  <div class="col-md-2" style="max-width: 100px;">
+                    <div class="form-group mb-0">
+                      <label class="form-label fw-600 small mb-2 text-muted">Qty</label>
+                      <div class="pos-input-wrapper"
+                        :class="{ 'is-focused': isQtyFocused, 'has-value': String(scanQty).length > 0 }">
+                        <div class="pos-input-group">
+                          <input type="number" class="pos-input px-3" v-model="scanQty" placeholder="1"
+                            @focus="isQtyFocused = true" @blur="isQtyFocused = false">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-auto">
+                    <button class="btn btn-pos-primary shadow-sm px-4" style="min-width: 100px;">
+                      Scan
+                    </button>
+                  </div>
+                </div>
+
+                <div class="table-container pt-2">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-700 mb-0">Items</h6>
+                    <span class="badge bg-soft-primary text-primary">{{ items.length }} Items</span>
+                  </div>
+                  <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
+                    <!-- Custom slot for Actions -->
+                    <template #item-actions="item">
+                      <div class="table-actions d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-danger border-0" @click="deleteBook(item)">
+                          <vue-feather type="x" size="14"></vue-feather>
+                        </button>
+                      </div>
+                    </template>
+                  </dynamic-data-table>
+                </div>
               </div>
 
               <!-- Fields -->
@@ -150,6 +168,20 @@
                       <div class="form-group mb-0">
                         <label class="form-label fw-600 small mb-1">Qty</label>
                         <input type="number" class="form-control" v-model="plasticCoverQty" placeholder="Enter qty">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row gx-2 mt-3">
+                    <!-- Checkbox-->
+                    <div class="col-md-3 col-6">
+                      <div class="pos-checkbox-group">
+                        <label class="pos-checkbox-wrapper">
+                          <input type="checkbox" class="pos-checkbox-input" v-model="checkbox">
+                          <span class="pos-checkbox-mark">
+                            <vue-feather type="check" size="12"></vue-feather>
+                          </span>
+                          <span class="pos-checkbox-label">Apply Withholding Tax (1%)</span>
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -256,6 +288,8 @@ export default {
     return {
       invoiceNumber: "",
       isInputFocused: false,
+      isScanFocused: false,
+      isQtyFocused: false,
       headers: [
         { text: "#", value: "id" },
         { text: "Item Key", value: "itemKey" },
@@ -264,6 +298,7 @@ export default {
         { text: "Qty", value: "qty" },
         { text: "Discount", value: "discount" },
         { text: "Amount", value: "amount" },
+        { text: "Actions", value: "actions" },
       ],
       items: [
         { id: "REQ-001", itemKey: "ITM-001", description: "The Great Gatsby", price: "100", qty: "10", discount: "10", amount: "900" },
@@ -280,7 +315,16 @@ export default {
       plasticCover: "",
       plasticCoverQty: "",
       paymentMethod: "Cash",
+      checkbox: false,
+      scanItem: "",
+      scanQty: 1,
     };
+  },
+  computed: {
+    totalPayment() {
+      const total = this.items.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(total);
+    }
   },
 
   mounted() {
@@ -312,6 +356,9 @@ export default {
     handleSaveDraft() {
       console.log("Saving draft for:", this.customerName);
       alert("Draft saved!");
+    },
+    deleteBook(item) {
+      this.items = this.items.filter(i => i.id !== item.id);
     }
   },
 };
@@ -415,6 +462,28 @@ export default {
   background: #ffffff;
 }
 
+.pos-input-separator {
+  width: 1.5px;
+  height: 24px;
+  background-color: #e4e8f0;
+}
+
+.pos-qty-unit {
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.pos-qty-unit:focus-within {
+  background-color: rgba(255, 159, 67, 0.08) !important;
+  border-color: rgba(255, 159, 67, 0.2);
+}
+
+.pos-qty-mini-input::-webkit-inner-spin-button,
+.pos-qty-mini-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Has-value state */
 .pos-input-wrapper.has-value .pos-input-group {
   background: #ffffff;
@@ -442,6 +511,8 @@ export default {
 /* Input */
 .pos-input {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   border: none;
   background: transparent;
   padding: 13px 12px;
@@ -628,5 +699,98 @@ export default {
 .payment-method-tile.active .tile-icon.is-bpi,
 .payment-method-tile.active .tile-icon.is-bdo {
   border-width: 1.5px;
+}
+
+/* ── POS Primary Button behavior ──────────────────── */
+.btn-pos-primary {
+  background: linear-gradient(135deg, #FF9F43, #ff8510);
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 8px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-pos-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);
+  color: #fff;
+}
+
+.btn-pos-primary:active {
+  transform: scale(0.96);
+}
+
+/* ── Custom Checkbox ──────────────────────────────── */
+.pos-checkbox-group {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.pos-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0;
+  transition: transform 0.2s ease;
+}
+
+.pos-checkbox-wrapper:active {
+  transform: scale(0.96);
+}
+
+.pos-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.pos-checkbox-mark {
+  width: 22px;
+  height: 22px;
+  background: #f8f9fc;
+  border: 1.5px solid #8e9198;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.pos-checkbox-wrapper:hover .pos-checkbox-mark {
+  border-color: #FF9F43;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(255, 159, 67, 0.15);
+}
+
+.pos-checkbox-input:checked~.pos-checkbox-mark {
+  background: #FF9F43;
+  border-color: #FF9F43;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(255, 159, 67, 0.3);
+}
+
+.pos-checkbox-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  transition: color 0.25s ease;
+}
+
+.pos-checkbox-input:checked~.pos-checkbox-label {
+  color: #1B2850;
 }
 </style>

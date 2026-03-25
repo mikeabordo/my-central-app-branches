@@ -88,7 +88,7 @@ export default {
     async getStockRequests() {
       this.loading = true;
       try {
-        const responseData = await api.get("/branches/stock-request/list");
+        const responseData = await api.get("/branches/rs/list");
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
         console.log("Stock requests fetched:", this.items);

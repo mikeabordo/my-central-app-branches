@@ -14,7 +14,7 @@
         <div class="row">
           <div class="col-sm-12">
             <add-form :submitLabel="'Submit Request'" :fields="fields" @create="submitStockRequest"
-              @cancel="$router.push('/inventory/stock-request')" />
+              @cancel="$router.push('/inventory/rs')" />
           </div>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default {
           type: "search",
           required: true,
           placeholder: "Enter product code or title",
-          endpoint: "/branches/stock-request/search-product", // Replace with your actual search API endpoint
+          endpoint: "/branches/books/search", // Replace with your actual search API endpoint
           labelKey: "name", // the property from the API response to show as the main label
           valueKey: "id",   // the property to use as the value
           minChars: 2,
@@ -82,7 +82,7 @@ export default {
   methods: {
     async getNextRSNo() {
       try {
-        const responseData = await api.get("/branches/next-rsno");
+        const responseData = await api.get("/branches/next");
         this.nextRSNo =
           responseData?.RSNo ||
           responseData?.data?.RSNo ||
@@ -96,8 +96,8 @@ export default {
     },
     async submitStockRequest(formData) {
       try {
-        await api.post("/branches/stock-request/add", formData);
-        this.$router.push('/inventory/stock-request');
+        await api.post("/branches/rs/add", formData);
+        this.$router.push('/inventory/rs');
       } catch (error) {
         console.error("Stock request submission failed:", error);
       }
