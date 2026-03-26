@@ -32,8 +32,8 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link :to="`/inventory/stock-request/view/${item.id}`" class="btn btn-sm btn-outline-dark"
-                        title="View">
+                      <router-link :to="`/inventory/stock-request/view/${item.id}`"
+                        class="btn btn-sm btn-icon-only btn-outline-dark" title="View Details">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
                     </div>
@@ -88,7 +88,7 @@ export default {
     async getStockRequests() {
       this.loading = true;
       try {
-        const responseData = await api.get("/branches/rs/list");
+        const responseData = await api.get("/branches/rs/show");
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
         console.log("Stock requests fetched:", this.items);
@@ -140,5 +140,16 @@ export default {
 
 .table-actions .btn {
   padding: 0.25rem 0.5rem;
+}
+
+.btn-icon-only {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 </style>

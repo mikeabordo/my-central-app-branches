@@ -78,6 +78,14 @@
         "showSubRoute": false
       },
       {
+        "menuValue": "Charge Sales",
+        "icon": "credit-card",
+        "route": "/sales/charge-sales",
+        "active_link": "/sales/charge-sales",
+        "hasSubRoute": false,
+        "showSubRoute": false
+      },
+      {
         "menuValue": "Sales Report",
         "icon": "bar-chart-2",
         "active_link": "/sales/sales-report",

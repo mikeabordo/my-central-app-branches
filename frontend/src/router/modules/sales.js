@@ -15,6 +15,11 @@ export default [
                 component: () => import('@/views/pages/sales/pos.vue')
             },
             {
+                path: 'charge-sales',
+                name: 'charge-sales',
+                component: () => import('@/views/pages/sales/charge-sales.vue')
+            },
+            {
                 path: 'sales-report',
                 name: 'sales-report',
                 component: () => import('@/views/pages/sales/sales-report.vue')

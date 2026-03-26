@@ -17,17 +17,14 @@
           <div class="col-sm-12">
             <div class="card shadow-sm border-0">
               <div class="card-body">
-                <DynamicDataTable
-                  :headers="headers"
-                  :items="items"
-                  :loading="loading"
-                  searchPlaceholder="Search books by title, author, or ISBN..."
-                >
+                <DynamicDataTable :headers="headers" :items="items" :loading="loading"
+                  searchPlaceholder="Search books by title, author, or ISBN...">
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link :to="`/inventory/book-list/view/${item.id}`" class="btn btn-sm btn-outline-dark" title="View">
-                         <vue-feather type="eye" size="14"></vue-feather>
+                      <router-link :to="`/inventory/book-list/view/${item.id}`"
+                        class="btn btn-sm btn-icon-only btn-outline-dark" title="View Details">
+                        <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
                       <button class="btn btn-sm btn-outline-warning" @click="editBook(item)">
                         <vue-feather type="edit-2" size="14"></vue-feather>
@@ -143,13 +140,26 @@ export default {
   background-color: #ffe5e5;
   color: #ff4d4d;
 }
+
 .bg-success-light {
   background-color: #e5f9e5;
   color: #28c76f;
 }
+
 .badge {
   padding: 0.5em 0.8em;
   font-weight: 500;
   border-radius: 4px;
+}
+
+.btn-icon-only {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 </style>

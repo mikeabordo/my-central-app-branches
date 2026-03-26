@@ -14,9 +14,9 @@
           </div>
         </div>
 
-        <!-- Sales Invoice Card -->
-        <div class="row">
-          <div class="col-lg-6 col-md-8 col-sm-12">
+        <!-- Sales Invoice & Branch Row -->
+        <div class="row g-4 align-items-end mb-1">
+          <div class="col-lg-6 col-md-7 col-sm-12">
             <div class="pos-invoice-card">
               <div class="pos-card-accent"></div>
               <div class="pos-card-body">
@@ -49,6 +49,46 @@
               </div>
             </div>
           </div>
+
+          <div class="col-lg-4 col-md-5 col-sm-12">
+            <!-- Payment Type Dropdown -->
+            <div class="pos-dropdown-wrapper">
+              <div class="pos-input-label-row">
+                <label class="pos-label fw-700">Payment Type</label>
+              </div>
+
+              <div class="pos-custom-dropdown" :class="{ 'is-active': isPaymentOpen }">
+                <div class="pos-dropdown-trigger" @click="isPaymentOpen = !isPaymentOpen">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="trigger-icon">
+                      <vue-feather type="credit-card" size="16"></vue-feather>
+                    </div>
+                    <span class="trigger-text">{{ paymentTypeSelection }}</span>
+                  </div>
+                  <vue-feather :type="isPaymentOpen ? 'chevron-up' : 'chevron-down'" size="16"
+                    class="chevron-icon"></vue-feather>
+                </div>
+
+                <div v-if="isPaymentOpen" class="pos-dropdown-overlay" @click="isPaymentOpen = false"></div>
+
+                <transition name="fade-slide">
+                  <div v-if="isPaymentOpen" class="pos-dropdown-menu">
+                    <div v-for="type in paymentTypeOptions" :key="type" class="pos-dropdown-item"
+                      :class="{ 'is-selected': paymentTypeSelection === type }"
+                      @click="paymentTypeSelection = type; isPaymentOpen = false">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="item-dot" v-if="paymentTypeSelection === type"></div>
+                        <span>{{ type }}</span>
+                      </div>
+                      <vue-feather v-if="paymentTypeSelection === type" type="check" size="14"
+                        class="check-icon"></vue-feather>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+            </div>
+          </div>
+          <!-- Dropdown end-->
         </div>
 
         <!-- POS Transaction Content -->
@@ -57,7 +97,7 @@
           <!-- Main Content Row -->
           <div class="row g-4 flex-grow-1">
             <!-- Left Column: Table & Fields -->
-            <div class="col-lg-9 d-flex flex-column gap-4">
+            <div :class="isCashSales ? 'col-lg-9' : 'col-lg-12'" class="d-flex flex-column gap-4">
 
               <!-- Table & Scan -->
               <div class="card p-4 flex-grow-1 mb-0 border-0 shadow-sm">
@@ -65,7 +105,7 @@
                 <div class="row mb-4 g-3 align-items-end">
                   <div class="col">
                     <div class="form-group mb-0">
-                      <label class="form-label fw-600 small mb-2 text-muted">Scan or Search Item</label>
+                      <label class="form-label fw-700 small mb-2">Scan or Search Item</label>
                       <div class="pos-input-wrapper"
                         :class="{ 'is-focused': isScanFocused, 'has-value': scanItem.length > 0 }">
                         <div class="pos-input-group">
@@ -80,7 +120,7 @@
                   </div>
                   <div class="col-md-2" style="max-width: 100px;">
                     <div class="form-group mb-0">
-                      <label class="form-label fw-600 small mb-2 text-muted">Qty</label>
+                      <label class="form-label fw-700 small mb-2">Qty</label>
                       <div class="pos-input-wrapper"
                         :class="{ 'is-focused': isQtyFocused, 'has-value': String(scanQty).length > 0 }">
                         <div class="pos-input-group">
@@ -102,7 +142,31 @@
                     <h6 class="fw-700 mb-0">Items</h6>
                     <span class="badge bg-soft-primary text-primary">{{ items.length }} Items</span>
                   </div>
-                  <dynamic-data-table :headers="headers" :items="items" :loading="loading" :search-field="false">
+                  <dynamic-data-table :headers="headers" :items="computedItems" :loading="loading"
+                    :search-field="false">
+                    <!-- Editable Price -->
+                    <template #item-price="item">
+                      <input type="number" class="pos-table-input pos-table-input--sm" :value="item.price"
+                        @input="updateItem(item.id, 'price', $event.target.value)" min="0" step="0.01" />
+                    </template>
+
+                    <!-- Editable Qty -->
+                    <template #item-qty="item">
+                      <input type="number" class="pos-table-input pos-table-input--sm" :value="item.qty"
+                        @input="updateItem(item.id, 'qty', $event.target.value)" min="0" step="1" />
+                    </template>
+
+                    <!-- Editable Discount -->
+                    <template #item-discount="item">
+                      <input type="number" class="pos-table-input pos-table-input--sm" :value="item.discount"
+                        @input="updateItem(item.id, 'discount', $event.target.value)" min="0" step="0.01" />
+                    </template>
+
+                    <!-- Computed Amount (read-only) -->
+                    <template #item-amount="item">
+                      <span class="fw-600 text-dark">{{ formatCurrency(item.amount) }}</span>
+                    </template>
+
                     <!-- Custom slot for Actions -->
                     <template #item-actions="item">
                       <div class="table-actions d-flex gap-2">
@@ -172,7 +236,7 @@
                     </div>
                   </div>
                   <div class="row gx-2 mt-3">
-                    <!-- Checkbox-->
+                    <!-- Tax Checkbox-->
                     <div class="col-md-3 col-6">
                       <div class="pos-checkbox-group">
                         <label class="pos-checkbox-wrapper">
@@ -191,7 +255,7 @@
             </div>
 
             <!-- Right Column: Payment Method -->
-            <div class="col-lg-3">
+            <div v-if="isCashSales" class="col-lg-3">
               <div class="card p-3 border-1 mb-0 h-100">
                 <h6 class="fw-600 mb-3">Payment Method</h6>
                 <div class="payment-methods-grid">
@@ -206,14 +270,13 @@
                     </div>
                   </label>
 
-                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Debit/Credit Terminal' }">
-                    <input type="radio" name="payment" value="Debit/Credit Terminal" v-model="paymentMethod"
-                      class="d-none">
+                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Cheque' }">
+                    <input type="radio" name="payment" value="Cheque" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
                       <div class="tile-icon is-terminal">
-                        <vue-feather type="credit-card" size="24"></vue-feather>
+                        <vue-feather type="mail" size="24"></vue-feather>
                       </div>
-                      <span class="tile-label">Debit/Credit Terminal</span>
+                      <span class="tile-label">Cheque</span>
                     </div>
                   </label>
 
@@ -247,7 +310,7 @@
                     </div>
                   </label>
 
-                  <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BDO' }">
+                  <!-- <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BDO' }">
                     <input type="radio" name="payment" value="BDO" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
                       <div class="tile-icon is-bdo bg-blue">
@@ -255,18 +318,19 @@
                       </div>
                       <span class="tile-label">BDO</span>
                     </div>
-                  </label>
-                  <div class="d-flex justify-content-between my-2 ">
-                    <h4 class="fw-600">Total Payment: </h4>
-                    <h4 class="text-orange fw-600 pr-5">{{ totalPayment }}</h4>
-                  </div>
+                  </label> -->
+
                 </div>
               </div>
             </div>
           </div>
           <!-- Actions -->
+          <div class="d-flex justify-content-end my-2 gap-4">
+            <h4 class="fw-600">Total Payment: </h4>
+            <h4 class="text-orange fw-600 pr-5">{{ totalPayment }}</h4>
+          </div>
           <div class="mt-1 pt-1 d-flex justify-content-end gap-2 mt-auto">
-            <button type="button" class="btn btn-light px-4" @click="handleSaveDraft">Save as Draft</button>
+            <button type="button" class="btn btn-outline-secondary px-4" @click="handleSaveDraft">Save as Draft</button>
             <button type="submit" class="btn btn-warning px-4 text-white hover-up shadow-sm">
               Submit
             </button>
@@ -287,6 +351,9 @@ export default {
   data() {
     return {
       invoiceNumber: "",
+      isPaymentOpen: false,
+      paymentTypeSelection: "Cash Sales",
+      paymentTypeOptions: ["Cash Sales", "Charge Sales"],
       isInputFocused: false,
       isScanFocused: false,
       isQtyFocused: false,
@@ -301,9 +368,9 @@ export default {
         { text: "Actions", value: "actions" },
       ],
       items: [
-        { id: "REQ-001", itemKey: "ITM-001", description: "The Great Gatsby", price: "100", qty: "10", discount: "10", amount: "900" },
-        { id: "REQ-002", itemKey: "ITM-002", description: "To Kill a Mockingbird", price: "200", qty: "20", discount: "20", amount: "1800" },
-        { id: "REQ-003", itemKey: "ITM-003", description: "1984", price: "300", qty: "30", discount: "30", amount: "2700" },
+        { id: "REQ-001", itemKey: "ITM-001", description: "The Great Gatsby", price: 100, qty: 10, discount: 10 },
+        { id: "REQ-002", itemKey: "ITM-002", description: "To Kill a Mockingbird", price: 200, qty: 20, discount: 20 },
+        { id: "REQ-003", itemKey: "ITM-003", description: "1984", price: 300, qty: 30, discount: 30 },
       ],
       loading: false,
       // Transaction Form Data
@@ -321,9 +388,21 @@ export default {
     };
   },
   computed: {
+    isCashSales() {
+      return this.paymentTypeSelection === 'Cash Sales';
+    },
+    computedItems() {
+      return this.items.map(item => ({
+        ...item,
+        amount: ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 0)) * (1 - (parseFloat(item.discount) || 0) / 100)
+      }));
+    },
     totalPayment() {
-      const total = this.items.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
-      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(total);
+      let total = this.computedItems.reduce((acc, curr) => acc + curr.amount, 0);
+      if (this.checkbox) {
+        total -= total * 0.01;
+      }
+      return this.formatCurrency(total);
     }
   },
 
@@ -359,6 +438,15 @@ export default {
     },
     deleteBook(item) {
       this.items = this.items.filter(i => i.id !== item.id);
+    },
+    updateItem(id, field, value) {
+      const item = this.items.find(i => i.id === id);
+      if (item) {
+        item[field] = parseFloat(value) || 0;
+      }
+    },
+    formatCurrency(value) {
+      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
     }
   },
 };
@@ -792,5 +880,226 @@ export default {
 
 .pos-checkbox-input:checked~.pos-checkbox-label {
   color: #1B2850;
+}
+
+/* ── Premium Branch Dropdown ───────────────────────── */
+.pos-dropdown-wrapper {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.pos-input-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.pos-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8c94a5;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.pos-badge-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.pos-custom-dropdown {
+  position: relative;
+  z-index: 100;
+}
+
+.pos-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1.5px solid #e4e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(27, 40, 80, 0.04);
+}
+
+.pos-custom-dropdown:hover .pos-dropdown-trigger {
+  border-color: #d0d5e0;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(27, 40, 80, 0.06);
+}
+
+.pos-custom-dropdown.is-active .pos-dropdown-trigger {
+  border-color: #FF9F43;
+  box-shadow: 0 0 0 4px rgba(255, 159, 67, 0.12);
+  background: #ffffff;
+}
+
+.trigger-icon {
+  width: 30px;
+  height: 30px;
+  background: rgba(255, 159, 67, 0.1);
+  color: #FF9F43;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.pos-custom-dropdown.is-active .trigger-icon {
+  background: #FF9F43;
+  color: #ffffff;
+}
+
+.trigger-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1B2850;
+}
+
+.chevron-icon {
+  color: #b0b7c3;
+  transition: transform 0.3s ease;
+}
+
+.pos-custom-dropdown.is-active .chevron-icon {
+  color: #FF9F43;
+}
+
+.pos-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99;
+  background: transparent;
+}
+
+.pos-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid rgba(27, 40, 80, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 15px 35px rgba(27, 40, 80, 0.15);
+  padding: 8px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.pos-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pos-dropdown-item:hover {
+  background: #f8f9fc;
+  color: #FF9F43;
+  padding-left: 18px;
+}
+
+.pos-dropdown-item.is-selected {
+  background: rgba(255, 159, 67, 0.08);
+  color: #FF9F43;
+  font-weight: 600;
+}
+
+.item-dot {
+  width: 6px;
+  height: 6px;
+  background: #FF9F43;
+  border-radius: 50%;
+}
+
+.check-icon {
+  color: #FF9F43;
+}
+
+/* Transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.25s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Editable Table Inputs ────────────────────────── */
+.pos-table-input {
+  width: 110px;
+  padding: 6px 10px;
+  border: 1.5px solid #e4e8f0;
+  border-radius: 8px;
+  background: #f8f9fc;
+  font-family: 'Nunito', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1B2850;
+  text-align: left;
+  outline: none;
+  transition: all 0.2s ease;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.pos-table-input::-webkit-inner-spin-button,
+.pos-table-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pos-table-input:focus {
+  border-color: #FF9F43;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.12);
+}
+
+.pos-table-input:hover:not(:focus) {
+  border-color: #d0d5e0;
+  background: #ffffff;
+}
+
+.pos-table-input--sm {
+  width: 70px;
 }
 </style>
