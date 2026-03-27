@@ -9,12 +9,17 @@
             <h4>Add Stock Request</h4>
             <h6>Create a new stock replenishment request</h6>
           </div>
+          <div class="page-btn">
+            <router-link to="/inventory/stock-request" class="btn btn-added btn-dark">
+              <vue-feather type="arrow-left" class="me-2"></vue-feather>Back to Stock Request
+            </router-link>
+          </div>
         </div>
 
         <div class="row">
           <div class="col-sm-12">
             <add-form :submitLabel="'Submit Request'" :fields="fields" @create="submitStockRequest"
-              @cancel="$router.push('/inventory/rs')" />
+              @cancel="$router.push('/inventory/stock-request')" />
           </div>
         </div>
       </div>

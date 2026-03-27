@@ -263,6 +263,7 @@
                   <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Cash' }">
                     <input type="radio" name="payment" value="Cash" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-cash">
                         <vue-feather type="dollar-sign" size="24"></vue-feather>
                       </div>
@@ -273,6 +274,7 @@
                   <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Cheque' }">
                     <input type="radio" name="payment" value="Cheque" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-terminal">
                         <vue-feather type="mail" size="24"></vue-feather>
                       </div>
@@ -283,6 +285,7 @@
                   <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Maya QR' }">
                     <input type="radio" name="payment" value="Maya QR" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-maya bg-black">
                         <img src="@/assets/img/logo/maya.svg" alt="Maya" class="img-fluid">
                       </div>
@@ -293,6 +296,7 @@
                   <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'Maya Terminal' }">
                     <input type="radio" name="payment" value="Maya Terminal" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-maya bg-black">
                         <img src="@/assets/img/logo/maya.svg" alt="Maya" class="img-fluid">
                       </div>
@@ -303,6 +307,7 @@
                   <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BPI' }">
                     <input type="radio" name="payment" value="BPI" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-bpi bg-white">
                         <img src="@/assets/img/logo/bpi.svg" alt="BPI" class="img-fluid">
                       </div>
@@ -313,6 +318,7 @@
                   <!-- <label class="payment-method-tile" :class="{ 'active': paymentMethod === 'BDO' }">
                     <input type="radio" name="payment" value="BDO" v-model="paymentMethod" class="d-none">
                     <div class="tile-content">
+                      <div class="tile-radio"><span class="tile-radio-dot"></span></div>
                       <div class="tile-icon is-bdo bg-blue">
                         <img src="@/assets/img/logo/bdo.svg" alt="BDO" class="img-fluid">
                       </div>
@@ -331,11 +337,16 @@
           </div>
           <div class="mt-1 pt-1 d-flex justify-content-end gap-2 mt-auto">
             <button type="button" class="btn btn-outline-secondary px-4" @click="handleSaveDraft">Save as Draft</button>
-            <button type="submit" class="btn btn-warning px-4 text-white hover-up shadow-sm">
+            <button type="button" @click="handleCompleteSale"
+              class="btn btn-warning px-4 text-white hover-up shadow-sm">
               Submit
             </button>
           </div>
         </div>
+
+        <!-- Success Modal -->
+        <success-modal :autoClose="5000" :visible.sync="showSuccessModal" :title="successModalTitle"
+          :message="successModalMessage" @close="onSuccessModalClose" />
       </div>
     </div>
   </div>
@@ -343,10 +354,12 @@
 <script>
 
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
+import SuccessModal from "@/components/modals/success-modal.vue";
 export default {
   name: "PosSales",
   components: {
     DynamicDataTable,
+    SuccessModal,
   },
   data() {
     return {
@@ -385,6 +398,10 @@ export default {
       checkbox: false,
       scanItem: "",
       scanQty: 1,
+      // Success Modal
+      showSuccessModal: false,
+      successModalTitle: 'Success!',
+      successModalMessage: '',
     };
   },
   computed: {
@@ -430,11 +447,21 @@ export default {
     },
     handleCompleteSale() {
       console.log("Submitting transaction for:", this.customerName, this.customerAddress);
-      alert(`Transaction for ${this.customerName || 'Walk-in Customer'} submitted successfully!`);
+      // Reset dropdown to default
+      this.paymentTypeSelection = 'Cash Sales';
+      // Show success modal
+      this.successModalTitle = 'Transaction Complete!';
+      this.successModalMessage = `Transaction for ${this.customerName || 'Walk-in Customer'} has been submitted successfully.`;
+      this.showSuccessModal = true;
     },
     handleSaveDraft() {
       console.log("Saving draft for:", this.customerName);
-      alert("Draft saved!");
+      this.successModalTitle = 'Draft Saved!';
+      this.successModalMessage = 'Your transaction draft has been saved. You can continue editing later.';
+      this.showSuccessModal = true;
+    },
+    onSuccessModalClose() {
+      this.showSuccessModal = false;
     },
     deleteBook(item) {
       this.items = this.items.filter(i => i.id !== item.id);
@@ -447,7 +474,8 @@ export default {
     },
     formatCurrency(value) {
       return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
-    }
+    },
+
   },
 };
 </script>
@@ -677,7 +705,7 @@ export default {
 .payment-methods-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .payment-method-tile {
@@ -690,12 +718,58 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px 14px;
   background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
   border: 1.5px solid #edf2f7;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* ── Custom Radio Circle ("hole") ─────────────────── */
+.tile-radio {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.tile-radio-dot {
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: #FF9F43;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0;
+}
+
+/* Radio hover */
+.payment-method-tile:hover .tile-radio {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Radio active/selected */
+.payment-method-tile.active .tile-radio {
+  border-color: #FF9F43;
+  background: #fff8f1;
+  box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.15);
+}
+
+.payment-method-tile.active .tile-radio-dot {
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+  background: linear-gradient(135deg, #FF9F43, #ff8510);
+  box-shadow: 0 1px 4px rgba(255, 133, 16, 0.4);
 }
 
 .tile-icon {
@@ -711,6 +785,7 @@ export default {
   transition: all 0.25s ease;
   overflow: hidden;
   padding: 6px;
+  flex-shrink: 0;
 }
 
 .tile-icon img {
@@ -720,10 +795,12 @@ export default {
 }
 
 .tile-label {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #1B2850;
   transition: color 0.25s ease;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Hover State */
@@ -731,22 +808,22 @@ export default {
   background: #ffffff;
   border-color: #d0d5e0;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(27, 40, 80, 0.04);
+  box-shadow: 0 4px 12px rgba(27, 40, 80, 0.06);
 }
 
 /* Active / Selected State */
 .payment-method-tile.active .tile-content {
-  background: #ffffff;
+  background: linear-gradient(135deg, #fffbf5 0%, #fff4e8 100%);
   border-color: #FF9F43;
-  box-shadow: 0 0 0 1px #FF9F43, 0 8px 20px rgba(255, 159, 67, 0.10);
+  box-shadow: 0 0 0 1px #FF9F43, 0 6px 16px rgba(255, 159, 67, 0.12);
 }
 
 .payment-method-tile.active .tile-icon {
-  border-color: #cbd5e1;
+  border-color: rgba(255, 159, 67, 0.3);
 }
 
 .payment-method-tile.active .tile-label {
-  color: #FF9F43;
+  color: #e0850a;
 }
 
 /* ── Icon Variants (Inactive) ───────────────────── */
