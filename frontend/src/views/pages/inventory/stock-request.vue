@@ -10,7 +10,7 @@
             <h6>Manage and track inventory replenishment requests.</h6>
           </div>
           <div class="page-btn">
-            <router-link to="/inventory/stock-request/add" class="btn btn-added">
+            <router-link to="/inventory/stock-request/add" class="btn btn-added btn-gradient warm">
               <vue-feather type="plus-circle" class="me-2"></vue-feather>New Stock Request
             </router-link>
           </div>
@@ -88,7 +88,7 @@ export default {
     async getStockRequests() {
       this.loading = true;
       try {
-        const responseData = await api.get("/branches/rs/show");
+        const responseData = await api.get("/branches/rs/list");
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
         console.log("Stock requests fetched:", this.items);

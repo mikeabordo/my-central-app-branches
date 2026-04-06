@@ -10,9 +10,8 @@
             <p class="text-muted small mb-0">View complete details of this inventory replenishment request.</p>
           </div>
           <div class="page-btn">
-            <button type="button" class="btn btn-cancel d-inline-flex align-items-center gap-2"
-              @click="$router.push('/inventory/stock-request')">
-              <vue-feather type="arrow-left" size="14"></vue-feather>
+            <button type="button" class="btn btn-added btn-dark" @click="$router.push('/inventory/stock-request')">
+              <vue-feather type="arrow-left" size="14" class="me-2"></vue-feather>
               {{ backButtonText }}
             </button>
           </div>

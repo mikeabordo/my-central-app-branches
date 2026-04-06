@@ -91,10 +91,7 @@
     </div>
 
     <div class="d-flex justify-content-end mb-5">
-      <button type="button" class="btn btn-cancel me-2" @click="handleCancel">
-        Cancel
-      </button>
-      <button type="submit" class="btn btn-submit">
+      <button type="submit" class="btn btn-submit btn-gradient warm">
         {{ submitLabel }}
       </button>
     </div>
