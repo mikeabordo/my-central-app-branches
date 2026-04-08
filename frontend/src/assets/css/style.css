@@ -39219,3 +39219,43 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   PREMIUM BOOK RESULT STYLES
+   ───────────────────────────────────────────────────────────────────────── */
+.book-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.book-result-primary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.book-type-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 20px;
+  background-color: #fff3e0;
+  color: #FF9F43;
+  border: 1px solid #ffd59e;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.book-item-key {
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.book-result-secondary {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.3;
+  padding-left: 2px;
+}

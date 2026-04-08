@@ -66,8 +66,6 @@ export default {
   data() {
     return {
       nextRSNo: "",
-      optionBranches: [],
-      userBranchId: null,
     };
   },
   computed: {
@@ -79,21 +77,6 @@ export default {
           type: "text",
           disabled: true,
           value: this.nextRSNo,
-        },
-        {
-          key: "fromId",
-          label: "From Location",
-          type: "select",
-          placeholder: "Select Origin",
-          options: this.optionBranches,
-          value: this.userBranchId
-        },
-        {
-          key: "toId",
-          label: "To Location",
-          type: "select",
-          placeholder: "Select Destination",
-          options: this.optionBranches
         },
         {
           key: "remarks",
@@ -127,35 +110,9 @@ export default {
   },
   created() {
     this.getNextRSNo();
-    this.fetchBranches();
-    this.fetchUserBranch();
   },
   methods: {
-    async fetchBranches() {
-      try {
-        // get all branches
-        const response = await api.get("/branches/list");
-        const rawBranches = response.data || [];
-        this.optionBranches = rawBranches.map((b) => ({
-          label: b.branchstorename || b.branchname || b.name || "Unknown Branch",
-          value: b.branchid || b.id,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch branches:", error);
-      }
-    },
-    async fetchUserBranch() {
-      try {
-        const response = await api.get("/user/branch");
-        // Assuming the first branch or an 'active' branch is the current one
-        const activeBranch = response.data?.find(b => b.is_active) || response.data?.[0];
-        if (activeBranch) {
-          this.userBranchId = activeBranch.branchid;
-        }
-      } catch (error) {
-        console.error("Failed to fetch user branch:", error);
-      }
-    },
+
     async getNextRSNo() {
       try {
         const responseData = await api.get("/branches/rs/next");
@@ -173,13 +130,13 @@ export default {
     async submitStockRequest(formData) {
       // The backend expects specific fields. We map the product list to the items format.
       const payload = {
-        fromId: formData.fromId,
-        toId: formData.toId,
         remarks: formData.remarks,
         items: (formData.product || []).map((item) => {
+          // Backend expects a numeric bookId (integer)
+          // item.value / item.id come back as strings from the API
+          const rawId = item.value ?? item.id ?? item.bookitemkey;
           return {
-            // Try all possible ID fields; priority: documented bookId -> common id -> selector value
-            bookId: item.bookId,
+            bookId: parseInt(rawId, 10) || rawId,
             qty: item.qty || 1,
           };
         }),
@@ -196,42 +153,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.book-result-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.book-result-primary {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.book-type-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 1px 7px;
-  border-radius: 20px;
-  background-color: #fff3e0;
-  color: #FF9F43;
-  border: 1px solid #ffd59e;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-
-.book-item-key {
-  font-size: 0.875rem;
-  color: #1e293b;
-}
-
-.book-result-secondary {
-  font-size: 0.8rem;
-  color: #64748b;
-  line-height: 1.3;
-  padding-left: 2px;
-}
-</style>

@@ -8,7 +8,11 @@
         <div v-for="field in summaryFields" :key="field.key" class="col-md mb-3">
           <div class="summary-card shadow-sm">
             <span class="summary-label">{{ field.label }}</span>
-            <span class="summary-value">{{ item?.[field.key] || '—' }}</span>
+            <span class="summary-value">
+              <slot :name="'summary-' + field.key" v-bind="item">
+                {{ item?.[field.key] || '—' }}
+              </slot>
+            </span>
           </div>
         </div>
       </div>

@@ -69,8 +69,7 @@ export default {
       selectedRequest: null,
       headers: [
         { text: "#", value: "id", sortable: true },
-        { text: "ID", value: "RSNo", sortable: true },
-        { text: "Branch", value: "toBranch", sortable: true },
+        { text: "Ref No.", value: "RSNo", sortable: true },
         { text: "Status", value: "status", sortable: true },
         { text: "Date", value: "createdAt", sortable: true },
         { text: "Remarks", value: "remarks", sortable: true },

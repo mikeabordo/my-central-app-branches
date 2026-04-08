@@ -63,9 +63,16 @@
                       <div class="d-flex justify-content-between align-items-center">
                         <div class="result-details">
                           <slot name="dropdown-result" v-bind="result._raw">
-                            <slot name="col-product_details" v-bind="result._raw">
-                              <span class="fw-bold">{{ getOptionLabel(result) }}</span>
-                            </slot>
+                            <!-- Default Premium Item Layout if no slot provided -->
+                            <div class="book-result-item">
+                              <div class="book-result-primary">
+                                <span class="book-type-badge" v-if="result._raw.booktype">{{ result._raw.booktype }}</span>
+                                <span class="book-item-key fw-bold">{{ result._raw.bookitemkey || result.label }}</span>
+                              </div>
+                              <div class="book-result-secondary text-muted small">
+                                {{ result._raw.title || result._raw.description || '—' }}
+                              </div>
+                            </div>
                           </slot>
                         </div>
                         <vue-feather type="plus-circle" size="16" class="text-primary"></vue-feather>
