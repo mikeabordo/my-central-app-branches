@@ -27,12 +27,25 @@
 
             <view-item-table v-else :item="selectedRequest" :summary-fields="summaryFields" :columns="viewColumns"
               :table-items="viewTableItems">
-              <!-- Slot support for removing items if needed -->
-              <template #col-action="row">
-                <button class="btn btn-sm btn-outline-danger" title="Remove Item" @click="removeItemDetail(row)">
-                  <vue-feather type="trash-2" size="14"></vue-feather>
-                </button>
+              <!-- Item Key Slot -->
+              <template #col-itemKey="row">
+                <span class="text-secondary fw-bold">{{ row.booktype }}:</span>{{ row.bookitemkey || row.itemKey
+                }}
               </template>
+
+              <!-- Product Details Slot -->
+              <template #col-book_details="row">
+                <div class="d-flex flex-column gap-1">
+                  <span class="fw-bold text-dark fs-6">{{ row.title || row.bookDetails || '—' }}</span>
+                  <div class="text-secondary small d-flex flex-column">
+                    <span v-if="row.author">Author: {{ row.author }}</span>
+                    <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
+                    <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
+                  </div>
+                </div>
+              </template>
+
+
             </view-item-table>
           </div>
         </div>
@@ -70,8 +83,8 @@ export default {
     viewColumns() {
       return [
         { label: "#", key: "id", width: "50px" },
-        { label: "Item Key", key: "itemKey" },
-        { label: "Book Details", key: "bookDetails" },
+        { label: "Item Key", key: "itemKey", width: "20%" },
+        { label: "Book Details", key: "book_details" },
         { label: "Qty", key: "qty", width: "80px" },
         { label: "Fulfilled", key: "fulfilled", width: "80px" },
         { label: "Action", key: "action", width: "80px" },
@@ -79,13 +92,17 @@ export default {
     },
     viewTableItems() {
       if (!this.selectedRequest || !this.selectedRequest.items) {
-        // Return some mock data if empty (as per original code pattern)
-        return [
-          { id: "1", itemKey: "ITM-001", bookDetails: "Javascript Patterns", qty: "10", fulfilled: "5" },
-          { id: "2", itemKey: "ITM-002", bookDetails: "Eloquent JavaScript", qty: "20", fulfilled: "10" }
-        ];
+        return [];
       }
-      return this.selectedRequest.items.map((item, i) => ({ id: i + 1, ...item }));
+      return this.selectedRequest.items.map((item, i) => ({
+        id: i + 1,
+        ...item,
+        // Mapping from the real API response structure
+        itemKey: item.bookitemkey || item.itemKey || item.bookRef || "",
+        bookDetails: item.title || item.bookDetails || item.bookTitle || "",
+        qty: item.qtyRequested || item.qty || 0,
+        fulfilled: item.qtyDelivered || item.fulfilled || item.qtyFulfilled || 0,
+      }));
     },
   },
   created() {
@@ -93,17 +110,30 @@ export default {
   },
   methods: {
     async fetchRequest() {
-      const id = this.$route.params.id;
+      const id = this.$route.params.RSNo; // Could be RSNo or internal ID
       if (!id) return;
 
       this.loading = true;
       try {
-        const responseData = await api.get("/branches/stock-request/list");
-        const listTemp = responseData?.data || responseData || [];
-        const list = Array.isArray(listTemp) ? listTemp : [];
+        // Calling the items endpoint as per documentation
+        // The user mentioned they will modify the endpoint if needed
+        const response = await api.get(`/branches/rs/items?rsNo=${id}`);
 
-        const found = list.find((item) => String(item.id) === String(id));
-        this.selectedRequest = found || {};
+        // Handle various response structures (info/lines vs flat object vs array)
+        if (response && response.status === 200) {
+          this.selectedRequest = {
+            ...response.info,
+            items: response.lines || response.items || []
+          };
+        } else {
+          // Fallback: if response is an array of objects
+          const data = Array.isArray(response) ? response[0] : (response?.data || response);
+          this.selectedRequest = {
+            ...(data || {}),
+            items: data?.items || data?.lines || []
+          };
+        }
+        console.log("Selected Request:", this.selectedRequest);
       } catch (error) {
         console.error("Failed to fetch stock request details:", error);
         this.selectedRequest = {};

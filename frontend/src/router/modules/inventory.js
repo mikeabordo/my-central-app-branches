@@ -25,7 +25,7 @@ export default [
                 component: () => import('@/components/form-path/add-stock-request.vue')
             },
             {
-                path: 'stock-request/view/:id',
+                path: 'stock-request/view/:RSNo',
                 name: 'view-stock-request',
                 component: () => import('@/components/form-path/view-stock-request.vue')
             },

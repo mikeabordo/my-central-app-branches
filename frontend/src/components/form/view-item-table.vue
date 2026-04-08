@@ -35,9 +35,9 @@
               </tr>
               <tr v-for="(row, index) in tableItems" :key="index">
                 <td v-for="col in columns" :key="col.key">
-                  <!-- Slot support for custom column rendering -->
+                  <!-- Slot support for custom actions column rendering -->
                   <slot :name="'col-' + col.key" v-bind="row">
-                    {{ row[col.key] ?? '—' }}
+                    {{ row[col.key] ?? '' }}
                   </slot>
                 </td>
               </tr>

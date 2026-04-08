@@ -32,7 +32,7 @@
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
-                      <router-link :to="`/inventory/stock-request/view/${item.id}`"
+                      <router-link :to="`/inventory/stock-request/view/${item.RSNo}`"
                         class="btn btn-sm btn-icon-only btn-outline-dark" title="View Details">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
