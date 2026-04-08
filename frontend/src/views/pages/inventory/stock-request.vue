@@ -91,7 +91,6 @@ export default {
         const responseData = await api.get("/branches/rs/list");
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
-        console.log("Stock requests fetched:", this.items);
       } catch (error) {
         console.error("Failed to fetch stock requests:", error);
       } finally {

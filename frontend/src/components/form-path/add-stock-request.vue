@@ -18,8 +18,8 @@
 
         <div class="row">
           <div class="col-sm-12">
-    <add-form :submitLabel="'Submit Request'" :fields="fields" @create="submitStockRequest"
-              @cancel="$router.push('/inventory/stock-request')">
+            <add-form :submitLabel="'Submit Request'" :fields="fields" :summaryFields="summaryFields"
+              @create="submitStockRequest" @cancel="$router.push('/inventory/stock-request')">
 
               <template #dropdown-result="row">
                 <div class="book-result-item">
@@ -66,27 +66,45 @@ export default {
   data() {
     return {
       nextRSNo: "",
+      optionBranches: [],
+      userBranchId: null,
     };
   },
   computed: {
-    fields() {
+    summaryFields() {
       return [
         {
           key: "RSNo",
-          label: "Reference #",
+          label: "Reference",
           type: "text",
-          required: true,
           disabled: true,
           value: this.nextRSNo,
         },
         {
-          key: "remarks",
-          label: "Remarks",
-          type: "textarea",
-          placeholder: "Enter remarks",
-          required: true,
-          rows: 5,
+          key: "fromId",
+          label: "From Location",
+          type: "select",
+          placeholder: "Select Origin",
+          options: this.optionBranches,
+          value: this.userBranchId
         },
+        {
+          key: "toId",
+          label: "To Location",
+          type: "select",
+          placeholder: "Select Destination",
+          options: this.optionBranches
+        },
+        {
+          key: "remarks",
+          label: "Memo",
+          type: "textarea",
+          placeholder: "Enter memo here...",
+        }
+      ];
+    },
+    fields() {
+      return [
         {
           key: "product",
           label: "Product",
@@ -95,8 +113,8 @@ export default {
           placeholder: "Enter product code or title",
           method: "get",
           endpoint: "/books/search",
-          labelKey: "title",      // actual title field from API response
-          valueKey: "bookId",     // actual book ID field from API response
+          labelKey: "title",      // field from API for display
+          valueKey: "id",         // unique identifier field from API
           minChars: 2,
           tableColumns: [
             { label: 'Item Key', key: 'bookitemkey' },
@@ -109,8 +127,35 @@ export default {
   },
   created() {
     this.getNextRSNo();
+    this.fetchBranches();
+    this.fetchUserBranch();
   },
   methods: {
+    async fetchBranches() {
+      try {
+        // get all branches
+        const response = await api.get("/branches/list");
+        const rawBranches = response.data || [];
+        this.optionBranches = rawBranches.map((b) => ({
+          label: b.branchstorename || b.branchname || b.name || "Unknown Branch",
+          value: b.branchid || b.id,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch branches:", error);
+      }
+    },
+    async fetchUserBranch() {
+      try {
+        const response = await api.get("/user/branch");
+        // Assuming the first branch or an 'active' branch is the current one
+        const activeBranch = response.data?.find(b => b.is_active) || response.data?.[0];
+        if (activeBranch) {
+          this.userBranchId = activeBranch.branchid;
+        }
+      } catch (error) {
+        console.error("Failed to fetch user branch:", error);
+      }
+    },
     async getNextRSNo() {
       try {
         const responseData = await api.get("/branches/rs/next");
@@ -126,9 +171,24 @@ export default {
       }
     },
     async submitStockRequest(formData) {
+      // The backend expects specific fields. We map the product list to the items format.
+      const payload = {
+        fromId: formData.fromId,
+        toId: formData.toId,
+        remarks: formData.remarks,
+        items: (formData.product || []).map((item) => {
+          return {
+            // Try all possible ID fields; priority: documented bookId -> common id -> selector value
+            bookId: item.bookId,
+            qty: item.qty || 1,
+          };
+        }),
+      };
+      console.log("[StockRequest] Final Payload:", payload);
+
       try {
-        await api.post("/branches/rs/add", formData);
-        this.$router.push('/inventory/rs');
+        await api.post("/branches/rs/add", payload);
+        this.$router.push("/inventory/stock-request");
       } catch (error) {
         console.error("Stock request submission failed:", error);
       }

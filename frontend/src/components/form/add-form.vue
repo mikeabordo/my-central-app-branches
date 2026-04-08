@@ -1,5 +1,42 @@
 <template>
   <form @submit.prevent="handleSubmit">
+    <!-- Summary info row (optional, for Ref, Locations, etc.) -->
+    <div v-if="summaryFields && summaryFields.length" class="summary-row mb-4 d-flex gap-3">
+      <div v-for="field in summaryFields" :key="field.key" class="summary-item">
+        <div class="summary-card shadow-sm">
+          <span class="summary-label text-muted small text-uppercase fw-bold">{{ field.label }}</span>
+
+          <!-- Editable Card Value -->
+          <template v-if="field.type === 'select'">
+            <div class="custom-dropdown" v-click-outside="() => closeSummaryDropdown(field.key)">
+              <div class="dropdown-trigger fw-bold fs-5 mt-1" @click="toggleSummaryDropdown(field.key)">
+                {{ getSelectedLabel(field) || field.placeholder || 'Select' }}
+                <vue-feather type="chevron-down" size="16" class="ms-1 text-secondary"></vue-feather>
+              </div>
+              <div v-if="openSummaryDropdowns[field.key]" class="dropdown-menu-custom shadow-lg show">
+                <div v-for="opt in field.options" :key="getOptionValue(opt)" class="dropdown-item-custom"
+                  @click="selectSummaryOption(field, opt)">
+                  {{ getOptionLabel(opt) }}
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else-if="field.type === 'textarea'">
+            <textarea v-model="formData[field.key]" class="summary-textarea fw-600 fs-6 shadow-none mt-1"
+              style="background: transparent; resize: none;" rows="1" :placeholder="field.placeholder || ''"></textarea>
+          </template>
+          <template v-else-if="field.type === 'text'">
+            <input v-model="formData[field.key]" :disabled="field.disabled"
+              class="form-control border-0 p-0 fw-bold fs-5 shadow-none mt-1" :class="{ 'text-muted': field.disabled }"
+              style="background: transparent;" :placeholder="field.placeholder || ''" />
+          </template>
+          <template v-else>
+            <span class="summary-value d-block fw-bold fs-5 mt-1">{{ formData[field.key] || '—' }}</span>
+          </template>
+        </div>
+      </div>
+    </div>
+
     <div class="card shadow-sm border-0">
       <div class="card-body pt-3">
         <div class="row">
@@ -103,8 +140,9 @@
       </div>
     </div>
 
-    <div class="d-flex justify-content-end mb-5">
-      <button type="submit" class="btn btn-submit btn-gradient warm">
+    <div class="d-flex justify-content-end mb-5 mt-4">
+      <button type="submit" class="btn btn-submit btn-gradient warm" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
         {{ submitLabel }}
       </button>
     </div>
@@ -120,6 +158,8 @@ export default {
     title: { type: String, default: "Add New" },
     submitLabel: { type: String, default: "Submit" },
     fields: { type: Array, default: () => [] },
+    summaryFields: { type: Array, default: () => [] },
+    loading: { type: Boolean, default: false },
   },
 
   emits: ["create", "cancel"],
@@ -132,6 +172,7 @@ export default {
       searchLoading: {},
       searchNoResult: {},
       selectedItems: {}, // Track selected items for search fields
+      openSummaryDropdowns: {},
       _debounceTimers: {},
     };
   },
@@ -155,7 +196,14 @@ export default {
   watch: {
     fields: {
       handler(newFields) {
-        this.initFormData(newFields);
+        this.initFormData(newFields, this.summaryFields);
+      },
+      immediate: true,
+      deep: true,
+    },
+    summaryFields: {
+      handler(newSummary) {
+        this.initFormData(this.fields, newSummary);
       },
       immediate: true,
       deep: true,
@@ -183,18 +231,22 @@ export default {
       if (!n || n === 12) return "col-12";
       return `col-12 col-md-${n}`;
     },
-    initFormData(fields) {
-      const fieldKeys = fields.map(f => f.key);
+    initFormData(fields, summaries = []) {
+      const all = [...fields, ...summaries];
+      const fieldKeys = all.map(f => f.key);
 
       // Remove stale keys from reactive objects (in-place mutation preserves reactivity)
       Object.keys(this.formData).forEach(k => {
         if (!fieldKeys.includes(k)) delete this.formData[k];
       });
 
-      fields.forEach((f) => {
+      all.forEach((f) => {
         // Only initialize if the key doesn't already have user-entered data
         if (this.formData[f.key] === undefined || this.formData[f.key] === "") {
           this.formData[f.key] = f.value !== undefined && f.value !== null ? f.value : "";
+        } else if (f.value !== undefined && f.disabled) {
+          // Force update disabled values (like Ref #)
+          this.formData[f.key] = f.value;
         }
 
         if (this.searchQueries[f.key] === undefined) {
@@ -241,31 +293,20 @@ export default {
       this.searchLoading[field.key] = true;
       this.searchNoResult[field.key] = false;
 
-      console.log(`[Search - ${field.key}] Initiating search...`);
-      console.log(`[Search - ${field.key}] Endpoint:`, field.endpoint);
-      console.log(`[Search - ${field.key}] Query:`, query);
-
       try {
         const method = (field.method || "get").toLowerCase();
-        console.log(`[Search - ${field.key}] Method being used:`, method);
         let response;
 
         if (method === "post") {
-          console.log(`[Search - ${field.key}] Request Payload:`, { search: query, limit: 10 });
           response = await api.post(field.endpoint, { search: query, limit: 10 });
         } else {
           const fullUrl = `${field.endpoint}?search=${encodeURIComponent(query)}&limit=10`;
-          console.log(`[Search - ${field.key}] Request URL:`, fullUrl);
           response = await api.get(fullUrl);
         }
-
-        console.log(`[Search - ${field.key}] Raw Response from Backend:`, response);
 
         const raw = Array.isArray(response)
           ? response
           : response.data ?? [];
-
-        console.log(`[Search - ${field.key}] Extracted Array for Mapping:`, raw);
 
         const valueKey = field.valueKey ?? "id";
         const labelKey = field.labelKey ?? "name";
@@ -276,11 +317,8 @@ export default {
           _raw: item,
         }));
 
-        console.log(`[Search - ${field.key}] Final Mapped Search Results:`, this.searchResults[field.key]);
-
         this.searchNoResult[field.key] = this.searchResults[field.key].length === 0;
       } catch (err) {
-        console.error(`[Search - ${field.key}] Search Error:`, err);
         this.searchResults[field.key] = [];
         this.searchNoResult[field.key] = true;
       } finally {
@@ -332,6 +370,26 @@ export default {
       this.searchResults[key] = [];
     },
 
+    // ── Summary Dropdowns ──
+    toggleSummaryDropdown(key) {
+      const current = !!this.openSummaryDropdowns[key];
+      this.openSummaryDropdowns = {}; // close others
+      this.openSummaryDropdowns[key] = !current;
+    },
+    closeSummaryDropdown(key) {
+      this.openSummaryDropdowns[key] = false;
+    },
+    selectSummaryOption(field, opt) {
+      this.formData[field.key] = this.getOptionValue(opt);
+      this.closeSummaryDropdown(field.key);
+    },
+    getSelectedLabel(field) {
+      const val = this.formData[field.key];
+      if (!val) return null;
+      const opt = field.options.find(o => this.getOptionValue(o) === val);
+      return opt ? this.getOptionLabel(opt) : val;
+    },
+
     handleSubmit() {
       this.$emit("create", { ...this.formData });
     },
@@ -347,7 +405,7 @@ export default {
 .form-control,
 .form-select {
   border-width: 1px;
-  border-color: gray;
+  border-color: #d2d2d2;
 }
 
 .form-control:focus,
@@ -367,6 +425,101 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+}
+
+/* ── Custom Dropdown for Summary ── */
+.summary-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  flex: 1;
+  min-width: 200px;
+}
+
+.summary-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.summary-label {
+  letter-spacing: 0.025em;
+  color: #64748b;
+}
+
+.custom-dropdown {
+  position: relative;
+  cursor: pointer;
+}
+
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  color: #1e293b;
+  padding: 2px 0;
+}
+
+.dropdown-menu-custom {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1100;
+  min-width: 200px;
+  background: #fff;
+  border-radius: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  display: none;
+}
+
+.dropdown-menu-custom.show {
+  display: block;
+}
+
+.dropdown-item-custom {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+  transition: all 0.2s;
+}
+
+.dropdown-item-custom:hover {
+  background: #f8fafc;
+  color: #FF9F43;
+}
+
+/* ── Custom Textarea for Summary ── */
+.summary-textarea {
+  width: 100%;
+  padding: 3px 5px;
+  margin-top: 4px;
+  font-weight: 500;
+  color: #334155;
+  min-height: 24px;
+  line-height: 1.4;
+  transition: all 0.2s ease;
+  border: 1px solid #cbd5e1;
+}
+
+.summary-textarea:focus {
+  outline: none;
+  background: rgba(255, 159, 67, 0.03);
+  /* Subtle brand hint */
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-left: -10px;
+  width: calc(100% + 20px);
+  border: 1px solid #FF9F43;
+}
+
+.summary-textarea::placeholder {
+  font-weight: 400;
+  color: #cbd5e1;
 }
 
 /* ── Search results dropdown ── */
