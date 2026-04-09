@@ -1,73 +1,117 @@
-[StockRequest] Mapping item for submission:
-Proxy(Object) {bookitemkey: 'XLOCGVT00P', description: "Ursal-The Phil.Law on Local Gov't Taxation 2000 ed P", title: "The Phil.Law on Local Gov\\'t Taxation", author: 'Ursal', booktype: 'NEXC', …}
-[[Handler]]
-:
-MutableReactiveHandler
-[[Target]]
-:
-Object
-ISBN
-:
-""
-author
-:
-"Ursal"
-bookimage
-:
-""
-bookitemkey
-:
-"XLOCGVT00P"
-bookprice
-:
-400
-booktype
-:
-"NEXC"
-description
-:
-"Ursal-The Phil.Law on Local Gov't Taxation 2000 ed P"
-label
-:
-"The Phil.Law on Local Gov\\'t Taxation"
-qty
-:
-1
-title
-:
-"The Phil.Law on Local Gov\\'t Taxation"
-value
-:
-undefined
-[[Prototype]]
-:
-Object
-[[IsRevoked]]
-:
-false
-index.js??clonedRule…=script&lang=js:131 [StockRequest] Final Payload:
-{fromId: 1, toId: 6, remarks: 'test', items: Array(1)}
-fromId
-:
-1
-items
-:
-Array(1)
+
+{status: 200, data: Array(6)}
+data
+: 
+Array(6)
 0
-:
-{bookId: undefined, qty: 1}
-length
-:
-1
-[[Prototype]]
-:
-Array(0)
+: 
+RSNo
+: 
+"EC005"
+createdAt
+: 
+"Apr 08, 2026"
+fromBranch
+: 
+"E-COMMERCE"
+fullName
+: 
+"Mike Louis Abordo"
+id
+: 
+10
+isOwner
+: 
+true
 remarks
-:
-"test"
-toId
-:
+: 
+"Test 5"
+requestFromLocationId
+: 
+1
+requestToLocationId
+: 
+9
+requestedBy
+: 
+201
+status
+: 
+"PENDING"
+toBranch
+: 
+"WAREHOUSE"
+updatedAt
+: 
+"Apr 08, 2026"
+[[Prototype]]
+: 
+Object
+1
+: 
+{id: 8, RSNo: 'EC004', requestFromLocationId: 1, requestToLocationId: 9, status: 'PENDING', …}
+2
+: 
+{id: 7, RSNo: 'EC003', requestFromLocationId: 1, requestToLocationId: 9, status: 'PENDING', …}
+3
+: 
+{id: 6, RSNo: 'EC002', requestFromLocationId: 1, requestToLocationId: 1, status: 'PENDING', …}
+4
+: 
+{id: 5, RSNo: 'EC001', requestFromLocationId: 1, requestToLocationId: 1, status: 'PENDING', …}
+5
+: 
+RSNo
+: 
+"CE001"
+createdAt
+: 
+"Apr 02, 2026"
+fromBranch
+: 
+"E-COMMERCE"
+fullName
+: 
+"Medwin Sabueto"
+id
+: 
+3
+isOwner
+: 
+false
+remarks
+: 
+"hello"
+requestFromLocationId
+: 
+1
+requestToLocationId
+: 
+9
+requestedBy
+: 
+87
+status
+: 
+"PENDING"
+toBranch
+: 
+"WAREHOUSE"
+updatedAt
+: 
+"Apr 04, 2026"
+[[Prototype]]
+: 
+Object
+length
+: 
 6
 [[Prototype]]
-:
+: 
+Array(0)
+status
+: 
+200
+[[Prototype]]
+: 
 Object

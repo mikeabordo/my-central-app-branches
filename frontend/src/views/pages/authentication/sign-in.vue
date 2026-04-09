@@ -106,6 +106,7 @@ export default {
     // Validation schema – idnumber is required (no email validation)
     const schema = Yup.object().shape({
       idnumber: Yup.string()
+        .transform((value) => (typeof value === "string" ? value.trim() : value))
         .required("ID Number is required")
         .min(3, "ID Number must be at least 3 characters"),
       password: Yup.string()
@@ -125,7 +126,8 @@ export default {
 
       try {
         // Call the backend API to validate login credentials
-        const response = await authService.login(values.idnumber, values.password);
+        const idnumber = typeof values.idnumber === "string" ? values.idnumber.trim() : values.idnumber;
+        const response = await authService.login(idnumber, values.password);
 
         if (response.status) {
           // Login successful – redirect to dashboard

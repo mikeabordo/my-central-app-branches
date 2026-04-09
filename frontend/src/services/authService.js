@@ -21,9 +21,11 @@ const authService = {
    * @returns {Promise<object>} { status, message, data: { user } }
    */
   async login(idnumber, password) {
+    const normalizedIdNumber = typeof idnumber === 'string' ? idnumber.trim() : idnumber;
+
     // Call backend API
     const response = await api.post('/auth/login', {
-      idnumber,
+      idnumber: normalizedIdNumber,
       password,
     });
 

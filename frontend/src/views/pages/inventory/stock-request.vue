@@ -36,6 +36,10 @@
                         class="btn btn-sm btn-icon-only btn-outline-dark" title="View Details">
                         <vue-feather type="eye" size="14"></vue-feather>
                       </router-link>
+                      <router-link v-if="item.isOwner" :to="`/inventory/stock-request/edit/${item.RSNo}`"
+                        class="btn btn-sm btn-icon-only btn-outline-warning" title="Edit Details">
+                        <vue-feather type="edit" size="14"></vue-feather>
+                      </router-link>
                     </div>
                   </template>
                 </DynamicDataTable>
@@ -88,6 +92,7 @@ export default {
       this.loading = true;
       try {
         const responseData = await api.get("/branches/rs/list");
+        console.log("Stock request JSON response:", responseData);
         let fetchedStockRequests = responseData.data || responseData || [];
         this.items = Array.isArray(fetchedStockRequests) ? fetchedStockRequests : [];
       } catch (error) {
