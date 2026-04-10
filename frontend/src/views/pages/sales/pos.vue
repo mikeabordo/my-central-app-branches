@@ -811,11 +811,13 @@ export default {
   box-shadow: 0 4px 12px rgba(27, 40, 80, 0.06);
 }
 
-/* Active / Selected State */
+/* Active / Selected State / Payment Method */
 .payment-method-tile.active .tile-content {
   background: linear-gradient(135deg, #fffbf5 0%, #fff4e8 100%);
-  border-color: #FF9F43;
-  box-shadow: 0 0 0 1px #FF9F43, 0 6px 16px rgba(255, 159, 67, 0.12);
+  border-color: #FF9F4380;
+  box-shadow:
+    0 0 0 1px rgba(255, 159, 67, 0.04),
+    0 6px 16px rgba(255, 159, 67, 0.08);
 }
 
 .payment-method-tile.active .tile-icon {
