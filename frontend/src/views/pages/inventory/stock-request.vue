@@ -40,6 +40,10 @@
                         class="btn btn-sm btn-icon-only btn-outline-warning" title="Edit Details">
                         <vue-feather type="edit" size="14"></vue-feather>
                       </router-link>
+                      <button v-if="item.isOwner" @click="cancelRequest(item.RSNo)"
+                        class="btn btn-sm btn-icon-only btn-outline-danger" title="Cancel Details">
+                        <vue-feather type="x-circle" size="14"></vue-feather>
+                      </button>
                     </div>
                   </template>
                 </DynamicDataTable>
@@ -49,6 +53,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Modals -->
+    <ConfirmationModal v-model:visible="showConfirmModal" title="Cancel Stock Request"
+      message="Are you sure you want to cancel this stock request? This action cannot be undone."
+      confirmButtonText="Yes, Cancel it" :loading="modalLoading" @confirm="handleConfirmCancel" />
+
+    <SuccessModal v-model:visible="showSuccessModal" title="Request Cancelled" :message="successMessage"
+      :autoClose="5000" />
   </div>
 
 
@@ -60,17 +72,26 @@
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
 import api from "@/services/api";
+import ConfirmationModal from "@/components/modals/confirmation-modal.vue";
+import SuccessModal from "@/components/modals/success-modal.vue";
 
 export default {
   name: "StockRequest",
   components: {
     DynamicDataTable,
+    ConfirmationModal,
+    SuccessModal,
   },
   data() {
     return {
       items: [],
       loading: false,
       selectedRequest: null,
+      showConfirmModal: false,
+      showSuccessModal: false,
+      modalLoading: false,
+      rsNoToCancel: null,
+      successMessage: "",
       headers: [
         { text: "#", value: "id", sortable: true },
         { text: "Ref No.", value: "RSNo", sortable: true },
@@ -114,6 +135,32 @@ export default {
       }
     },
 
+    cancelRequest(RSNo) {
+      this.rsNoToCancel = RSNo;
+      this.showConfirmModal = true;
+    },
+
+    async handleConfirmCancel() {
+      this.modalLoading = true;
+      try {
+        const response = await api.post('/branches/rs/cancel', {
+          rsNo: this.rsNoToCancel
+        });
+
+        if (response.status === 200) {
+          this.successMessage = response.message || "Stock request cancelled successfully.";
+          this.showConfirmModal = false;
+          this.showSuccessModal = true;
+          this.getStockRequests();
+        }
+      } catch (err) {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to cancel";
+        console.error("Failed to cancel stock request:", errorMsg);
+        // You might want to show an error toast or modal here
+      } finally {
+        this.modalLoading = false;
+      }
+    }
 
   },
 };
