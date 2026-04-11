@@ -86,7 +86,7 @@
             <!-- /Search -->
 
 
-            <!-- Dropdown Menu with Toggle Button -->
+            <!-- Select Branch Dropdown Menu with Toggle Button -->
             <li class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown">
                 <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown"
                     data-bs-auto-close="false">
@@ -105,7 +105,7 @@
                         @click="toggleItemCheckbox('store-01')">
                         <img src="@/assets/img/store/store-01.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Alpha</span>
+                        <span class="flex-grow-1">Warehouse</span>
                         <label class="tgl-mini ms-auto mb-0" @click.stop>
                             <input type="checkbox" id="store-01" checked>
                             <div class="fill"></div>
@@ -123,7 +123,7 @@
                         @click="toggleItemCheckbox('store-02')">
                         <img src="@/assets/img/store/store-02.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Apex</span>
+                        <span class="flex-grow-1">E-commerce</span>
                         <label class="tgl-mini ms-auto mb-0" @click.stop>
                             <input type="checkbox" id="store-02">
                             <div class="fill"></div>
@@ -141,7 +141,7 @@
                         @click="toggleItemCheckbox('store-03')">
                         <img src="@/assets/img/store/store-03.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Bevy</span>
+                        <span class="flex-grow-1">Branches</span>
                         <label class="tgl-mini ms-auto mb-0" @click.stop>
                             <input type="checkbox" id="store-03" checked>
                             <div class="fill"></div>
@@ -155,7 +155,7 @@
                             </span>
                         </label>
                     </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
+                    <!-- <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
                         @click="toggleItemCheckbox('store-04')">
                         <img src="@/assets/img/store/store-04.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
@@ -172,7 +172,7 @@
                                 Active
                             </span>
                         </label>
-                    </a>
+                    </a> -->
                 </div>
             </li>
             <!-- Dropdown Menu with Toggle Button -->

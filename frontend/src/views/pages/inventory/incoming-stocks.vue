@@ -52,14 +52,17 @@
 
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
+import api from "@/services/api";
 
 export default {
-  name: "BookList",
+  name: "IncomingStocks",
   components: {
     DynamicDataTable,
   },
   data() {
     return {
+      items: [],
+      loading: false,
       headers: [
         { text: "Title", value: "title", sortable: true },
         { text: "Author", value: "author", sortable: true },
@@ -70,61 +73,27 @@ export default {
         { text: "Quantity", value: "quantity", sortable: true },
         { text: "Actions", value: "actions" },
       ],
-      items: [
-        {
-          id: 1,
-          title: "The Great Gatsby",
-          author: "F. Scott Fitzgerald",
-          isbn: "978-0743273565",
-          product: "Classic Literature",
-          edition: "1st",
-          price: "$15.99",
-          quantity: 45,
-        },
-        {
-          id: 2,
-          title: "To Kill a Mockingbird",
-          author: "Harper Lee",
-          isbn: "978-0446310789",
-          product: "Fiction",
-          edition: "1st",
-          price: "$12.50",
-          quantity: 8,
-        },
-        {
-          id: 3,
-          title: "1984",
-          author: "George Orwell",
-          isbn: "978-0451524935",
-          product: "Science Fiction",
-          edition: "1st",
-          price: "$10.99",
-          quantity: 22,
-        },
-        {
-          id: 4,
-          title: "The Catcher in the Rye",
-          author: "J.D. Salinger",
-          isbn: "978-0316769174",
-          product: "Classic",
-          edition: "1st",
-          price: "$14.00",
-          quantity: 5,
-        },
-        {
-          id: 5,
-          title: "The Hobbit",
-          author: "J.R.R. Tolkien",
-          isbn: "978-0547928227",
-          product: "Fantasy",
-          edition: "1st",
-          price: "$18.25",
-          quantity: 15,
-        },
-      ],
+      
     };
   },
+
+  created() {
+    this.getIncomingStocks();
+  },
   methods: {
+
+
+    async getIncomingStocks() {
+      this.loading = true;
+      try {
+        const responseData = await api.get("/branches/stocks/incoming");
+        console.log("Incoming stocks JSON response:", responseData);
+        let fetchedIncomingStocks = responseData.data || responseData || [];
+        this.items = Array.isArray(fetchedIncomingStocks) ? fetchedIncomingStocks : [];
+      } catch (error) {
+        console.error("Failed to fetch incoming stocks:", error);
+      }
+    },
     editBook(book) {
       console.log("Editing book:", book);
     },
