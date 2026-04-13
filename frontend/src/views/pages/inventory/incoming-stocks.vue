@@ -17,11 +17,7 @@
           <div class="col-sm-12">
             <div class="card shadow-sm border-0">
               <div class="card-body">
-                <DynamicDataTable
-                  :headers="headers"
-                  :items="items"
-                  searchPlaceholder="Search..."
-                >
+                <DynamicDataTable :headers="headers" :items="items" searchPlaceholder="Search...">
                   <!-- Custom slot for actions -->
                   <template #item-actions="item">
                     <div class="table-actions d-flex gap-2">
@@ -64,16 +60,15 @@ export default {
       items: [],
       loading: false,
       headers: [
-        { text: "Title", value: "title", sortable: true },
-        { text: "Author", value: "author", sortable: true },
-        { text: "Product", value: "product", sortable: true },
-        { text: "Edition", value: "edition", sortable: true },
-        { text: "ISBN", value: "isbn", sortable: true },
-        { text: "Price", value: "price", sortable: true },
-        { text: "Quantity", value: "quantity", sortable: true },
+        { text: "Ref No.", value: "ref", sortable: true },
+        { text: "Location", value: "location", sortable: true },
+        { text: "Date", value: "createdAt", sortable: true },
+        { text: "Qty", value: "qty", sortable: true },
+        { text: "Memo", value: "remarks", sortable: true },
+        { text: "Status", value: "status", sortable: true },
         { text: "Actions", value: "actions" },
       ],
-      
+
     };
   },
 
@@ -109,10 +104,12 @@ export default {
   background-color: #ffe5e5;
   color: #ff4d4d;
 }
+
 .bg-success-light {
   background-color: #e5f9e5;
   color: #28c76f;
 }
+
 .badge {
   padding: 0.5em 0.8em;
   font-weight: 500;
