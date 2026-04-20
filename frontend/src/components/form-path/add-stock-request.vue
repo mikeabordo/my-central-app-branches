@@ -51,21 +51,29 @@
         </div>
       </div>
     </div>
+
+    <!-- Success Modal -->
+    <success-modal :visible="showSuccessModal" title="Stock Request Created"
+      message="Your stock request has been successfully submitted and is now pending for processing."
+      @close="$router.push('/inventory/stock-request')" :autoClose="5000" />
   </div>
 </template>
 
 <script>
 import AddForm from "@/components/form/add-form.vue";
+import SuccessModal from "@/components/modals/success-modal.vue";
 import api from "@/services/api";
 
 export default {
   name: "AddStockRequest",
   components: {
     AddForm,
+    SuccessModal,
   },
   data() {
     return {
       nextRSNo: "",
+      showSuccessModal: false,
     };
   },
   computed: {
@@ -145,7 +153,7 @@ export default {
 
       try {
         await api.post("/branches/rs/add", payload);
-        this.$router.push("/inventory/stock-request");
+        this.showSuccessModal = true;
       } catch (error) {
         console.error("Stock request submission failed:", error);
       }

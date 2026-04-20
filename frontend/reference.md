@@ -1,151 +1,502 @@
 <template>
-  <div>
-    <layout-header></layout-header>
-    <layout-sidebar></layout-sidebar>
-    <div class="page-wrapper">
-      <div class="content">
-        <div class="page-header d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
-          <div class="page-title">
-            <h3 class="fw-bold mb-1">Stock Request Details</h3>
-            <p class="text-muted small mb-0">View complete details of this inventory replenishment request.</p>
-          </div>
-          <div class="page-btn">
-            <button type="button" class="btn btn-added btn-dark" @click="$router.push('/inventory/stock-request')">
-              <vue-feather type="arrow-left" size="14" class="me-2"></vue-feather>
-              Back to Stock Request List
-            </button>
-          </div>
+    <!-- Header -->
+    <div class="header">
+
+        <!-- Logo -->
+        <div class="header-left active">
+            <router-link to="/dashboard" class="logo logo-normal">
+                <img src="@/assets/img/logo/mycentralapp-logo-v3.webp" alt="">
+            </router-link>
+            <router-link to="/dashboard" class="logo logo-white">
+                <img src="@/assets/img/logo-white.png" alt="">
+            </router-link>
+            <router-link to="/dashboard" class="logo-small">
+                <img src="@/assets/img/logo-small.png" alt="">
+            </router-link>
+            <a id="toggle_btn" href="javascript:void(0);" @click="toggleSidebar">
+                <vue-feather type="chevrons-left"></vue-feather>
+            </a>
         </div>
+        <!-- /Logo -->
 
-        <div class="row">
-          <div class="col-sm-12">
-            <div v-if="loading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
+        <a id="mobile_btn" class="mobile_btn" href="javascript:void(0);" @click="toggleSidebar1">
+            <span class="bar-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+        </a>
 
-            <template v-else>
-              <view-item-table
-                :item="selectedRequest || {}"
-                :summary-fields="summaryFields"
-                :columns="viewColumns"
-                :table-items="viewTableItems"
-              >
-                <template #summary-remarks="item">
-                  {{ item.remarks || '-' }}
-                </template>
+        <!-- Header Menu -->
+        <ul class="nav user-menu">
 
-                <template #col-itemKey="row">
-                  <span class="text-secondary fw-bold">{{ row.booktype }}:</span>{{ row.bookitemkey || row.itemKey }}
-                </template>
+            <!-- Search -->
+            <li class="nav-item nav-searchinputs">
+                <div class="top-nav-search">
+                    <a href="javascript:void(0);" class="responsive-search">
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <form action="javascript:void(0);" class="dropdown">
+                        <div class="searchinputs dropdown-toggle" id="dropdownMenuClickable" data-bs-toggle="dropdown"
+                            data-bs-auto-close="false">
+                            <input type="text" placeholder="Search">
+                            <div class="search-addon">
+                                <span><vue-feather type="x-circle" class="feather-14"></vue-feather></span>
+                            </div>
+                        </div>
+                        <div class="dropdown-menu search-dropdown" aria-labelledby="dropdownMenuClickable">
+                            <div class="search-info">
+                                <h6><span><vue-feather type="search" class="feather-16"></vue-feather></span>Recent
+                                    Searches
+                                </h6>
+                                <ul class="search-tags">
+                                    <li><a href="javascript:void(0);">Products</a></li>
+                                    <li><a href="javascript:void(0);">Sales</a></li>
+                                    <li><a href="javascript:void(0);">Applications</a></li>
+                                </ul>
+                            </div>
+                            <div class="search-info">
+                                <h6><span><vue-feather type="help-circle" class="feather-16"></vue-feather></span>Help
+                                </h6>
+                                <p>How to Change Product Volume from 0 to 200 on Inventory management</p>
+                                <p>Change Product Name</p>
+                            </div>
+                            <div class="search-info">
+                                <h6><span><vue-feather type="user" class="feather-16"></vue-feather></span>Customers
+                                </h6>
+                                <ul class="customers">
+                                    <li>
+                                        <a href="javascript:void(0);">Aron Varu<img
+                                                src="@/assets/img/profiles/avator1.jpg" alt="" class="img-fluid"></a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);">Jonita<img
+                                                src="@/assets/img/profiles/avatar-01.jpg" alt="" class="img-fluid"></a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);">Aaron<img
+                                                src="@/assets/img/profiles/avatar-10.jpg" alt="" class="img-fluid"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+            <!-- /Search -->
 
-                <template #col-book_details="row">
-                  <div class="d-flex flex-column gap-1">
-                    <span class="fw-bold text-dark fs-6">{{ row.title || row.bookDetails || '-' }}</span>
-                    <div class="text-secondary small d-flex flex-column">
-                      <span v-if="row.author">Author: {{ row.author }}</span>
-                      <span v-if="row.bookedition">Edition: {{ row.bookedition }}</span>
-                      <span v-if="row.ISBN">ISBN: {{ row.ISBN }}</span>
+
+            <!-- Select Branch Dropdown Menu with Toggle Button -->
+            <li class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown">
+                <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown"
+                    data-bs-auto-close="false">
+                    <span class="user-info">
+                        <span class="user-letter">
+                            <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid">
+                        </span>
+                        <span class="user-detail">
+                            <span class="user-name">Select Branch</span>
+                        </span>
+                    </span>
+                </a>
+                <!-- Dropdown Items (dynamic from GET /user/branch) -->
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a v-for="branch in userBranches" :key="branch.id" href="javascript:void(0);"
+                        class="dropdown-item d-flex align-items-center py-2" @click="toggleItemCheckbox(branch.id)">
+                        <img src="@/assets/img/store/store-01.png" alt="Store Logo"
+                            class="img-fluid me-3 dropdown-logo">
+                        <span class="flex-grow-1">{{ branch.branchstorename }}</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.prevent="toggleItemCheckbox(branch.id)">
+                            <input type="checkbox" :id="'branch-' + branch.id" :checked="activeBranchId === branch.id">
+                            <div class="fill"></div>
+                            <span class="lbl lbl-inactive">
+                                <span class="dot dot-inactive"></span>
+                                Inactive
+                            </span>
+                            <span class="lbl lbl-active">
+                                <span class="dot dot-active"></span>
+                                Active
+                            </span>
+                        </label>
+                    </a>
+                </div>
+            </li>
+            <!-- /Select Branch Dropdown Menu with Toggle Button -->
+
+            <!-- Flag -->
+            <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);" role="button">
+                    <img src="@/assets/img/flags/us.png" alt="Language" class="img-fluid">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a href="javascript:void(0);" class="dropdown-item active">
+                        <img src="@/assets/img/flags/us.png" alt="" height="16"> English
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <img src="@/assets/img/flags/fr.png" alt="" height="16"> French
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <img src="@/assets/img/flags/es.png" alt="" height="16"> Spanish
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                        <img src="@/assets/img/flags/de.png" alt="" height="16"> German
+                    </a>
+                </div>
+            </li>
+            <!-- /Flag -->
+
+            <li class="nav-item nav-item-box">
+                <a href="javascript:void(0);" id="btnFullscreen" @click="initFullScreen">
+                    <vue-feather type="maximize"></vue-feather>
+                </a>
+            </li>
+            <li class="nav-item nav-item-box">
+                <a href="javascript:void(0);">
+                    <vue-feather type="mail"></vue-feather>
+                    <span class="badge rounded-pill">1</span>
+                </a>
+            </li>
+            <!-- Notifications -->
+            <li class="nav-item dropdown nav-item-box">
+                <a href="javascript:void(0);" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+                    <vue-feather type="bell"></vue-feather><span class="badge rounded-pill">2</span>
+                </a>
+                <div class="dropdown-menu notifications">
+                    <div class="topnav-dropdown-header">
+                        <span class="notification-title">Notifications</span>
+                        <a href="javascript:void(0)" class="clear-noti"> Clear All </a>
                     </div>
-                  </div>
-                </template>
+                    <div class="noti-content">
+                        <ul class="notification-list">
+                            <li class="notification-message">
+                                <a href="javascript:void(0);">
+                                    <div class="media d-flex">
+                                        <span class="avatar flex-shrink-0">
+                                            <img alt="" src="@/assets/img/profiles/avatar-02.jpg">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details"><span class="noti-title">John Doe</span> added
+                                                new task <span class="noti-title">Patient appointment booking</span>
+                                            </p>
+                                            <p class="noti-time"><span class="notification-time">4 mins ago</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="notification-message">
+                                <a href="javascript:void(0);">
+                                    <div class="media d-flex">
+                                        <span class="avatar flex-shrink-0">
+                                            <img alt="" src="@/assets/img/profiles/avatar-03.jpg">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details"><span class="noti-title">Tarah Shropshire</span>
+                                                changed the task name <span class="noti-title">Appointment booking
+                                                    with payment gateway</span>
+                                            </p>
+                                            <p class="noti-time"><span class="notification-time">6 mins ago</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="notification-message">
+                                <a href="javascript:void(0);">
+                                    <div class="media d-flex">
+                                        <span class="avatar flex-shrink-0">
+                                            <img alt="" src="@/assets/img/profiles/avatar-06.jpg">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details"><span class="noti-title">Misty Tison</span>
+                                                added <span class="noti-title">Domenic Houston</span> and <span
+                                                    class="noti-title">Claire Mapes</span> to project <span
+                                                    class="noti-title">Doctor available module</span>
+                                            </p>
+                                            <p class="noti-time"><span class="notification-time">8 mins ago</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="notification-message">
+                                <a href="javascript:void(0);">
+                                    <div class="media d-flex">
+                                        <span class="avatar flex-shrink-0">
+                                            <img alt="" src="@/assets/img/profiles/avatar-17.jpg">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details"><span class="noti-title">Rolland Webber</span>
+                                                completed task <span class="noti-title">Patient and Doctor video
+                                                    conferencing</span>
+                                            </p>
+                                            <p class="noti-time"><span class="notification-time">12 mins ago</span></p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="notification-message">
+                                <a href="javascript:void(0);">
+                                    <div class="media d-flex">
+                                        <span class="avatar flex-shrink-0">
+                                            <img alt="" src="@/assets/img/profiles/avatar-13.jpg">
+                                        </span>
+                                        <div class="media-body flex-grow-1">
+                                            <p class="noti-details"><span class="noti-title">Bernardo Galaviz</span>
+                                                added new task <span class="noti-title">Private chat module</span>
+                                            </p>
+                                            <p class="noti-time"><span class="notification-time">2 days ago</span></p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="topnav-dropdown-footer">
+                        <a href="javascript:void(0);">View all Notifications</a>
+                    </div>
+                </div>
+            </li>
+            <!-- /Notifications -->
 
-                <template #col-qty="row">
-                  {{ row.qty }}
-                </template>
+            <li class="nav-item nav-item-box">
+                <a href="javascript:void(0);"><vue-feather type="settings"></vue-feather></a>
+            </li>
+            <li class="nav-item dropdown has-arrow main-drop">
+                <a href="javascript:void(0);" class="dropdown-toggle nav-link userset" data-bs-toggle="dropdown">
+                    <span class="user-info">
+                        <span class="user-letter">
+                            <img src="@/assets/img/profiles/avator1.jpg" alt="" class="img-fluid">
+                        </span>
+                        <span class="user-detail">
+                            <span class="user-name">John Smilga</span>
+                            <span class="user-role">Super Admin</span>
+                        </span>
+                    </span>
+                </a>
+                <div class="dropdown-menu menu-drop-user">
+                    <div class="profilename">
+                        <div class="profileset">
+                            <span class="user-img"><img src="@/assets/img/profiles/avator1.jpg" alt="">
+                                <span class="status online"></span></span>
+                            <div class="profilesets">
+                                <h6>John Smilga</h6>
+                                <h5>Super Admin</h5>
+                            </div>
+                        </div>
+                        <hr class="m-0">
+                        <a class="dropdown-item" href="javascript:void(0);"> <vue-feather class="me-2"
+                                type="user"></vue-feather> My
+                            Profile</a>
+                        <a class="dropdown-item" href="javascript:void(0);"><vue-feather class="me-2"
+                                type="settings"></vue-feather>Settings</a>
+                        <hr class="m-0">
+                        <router-link class="dropdown-item logout pb-0" to="/"><img src="@/assets/img/icons/log-out.svg"
+                                class="me-2" alt="img">Logout</router-link>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <!-- /Header Menu -->
 
-                <template #col-fulfilled="row">
-                  {{ row.fulfilled }}
-                </template>
-              </view-item-table>
-            </template>
-          </div>
+        <!-- Mobile Menu -->
+        <div class="dropdown mobile-user-menu">
+            <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+            <div class="dropdown-menu dropdown-menu-right">
+                <a class="dropdown-item" href="javascript:void(0);">My Profile</a>
+                <a class="dropdown-item" href="javascript:void(0);">Settings</a>
+                <router-link class="dropdown-item" to="/">Logout</router-link>
+            </div>
         </div>
-      </div>
+        <!-- /Mobile Menu -->
     </div>
+    <!-- /Header -->
 
-  </div>
+    <side-settings></side-settings>
+
 </template>
 
 <script>
-import ViewItemTable from "@/components/form/view-item-table.vue";
 import api from "@/services/api";
-
 export default {
-  name: "ViewStockRequest",
-  components: {
-    ViewItemTable,
-  },
-  data() {
-    return {
-      selectedRequest: null,
-      loading: false,
-    };
-  },
-  computed: {
-    summaryFields() {
-      return [
-        { key: "RSNo", label: "Reference No." },
-        { key: "status", label: "Status" },
-        { key: "createdAt", label: "Date" },
-        { key: "remarks", label: "Remarks" },
-      ];
-    },
-    viewColumns() {
-      return [
-        { label: "Item Key", key: "itemKey", width: "20%" },
-        { label: "Book Details", key: "book_details" },
-        { label: "Qty", key: "qty", width: "80px" },
-        { label: "Fulfilled", key: "fulfilled", width: "80px" },
-      ];
-    },
-    viewTableItems() {
-      const source = this.selectedRequest;
-      if (!source || !source.items) {
-        return [];
-      }
-
-      return source.items.map((item, i) => ({
-        id: i + 1,
-        _idx: i,
-        ...item,
-        itemKey: item.bookitemkey || item.itemKey || item.bookRef || "",
-        bookDetails: item.title || item.bookDetails || item.bookTitle || "",
-        qty: item.qtyRequested ?? item.qty ?? 0,
-        fulfilled: item.qtyDelivered || item.fulfilled || item.qtyFulfilled || 0,
-      }));
-    },
-  },
-  created() {
-    this.fetchRequest();
-  },
-  methods: {
-    async fetchRequest() {
-      const id = this.$route.params.RSNo;
-      if (!id) return;
-
-      this.loading = true;
-      try {
-        const response = await api.get(`/branches/rs/items?rsNo=${id}`);
-        const payload = response?.data ?? response ?? {};
-        const data = payload?.info ?? payload?.data ?? payload;
-        const items = payload?.lines ?? payload?.items ?? data?.items ?? [];
-
-        this.selectedRequest = {
-          ...(data || {}),
-          items: Array.isArray(items) ? items : [],
+    data() {
+        return {
+            // Tracks the currently active branch ID — persisted in localStorage to survive reloads
+            activeBranchId: null,
+            // Branches assigned to the current user, fetched from GET /user/branch
+            userBranches: [],
         };
-      } catch (error) {
-        console.error("Failed to fetch stock request details:", error);
-        this.selectedRequest = {};
-      } finally {
-        this.loading = false;
-      }
     },
-  },
+    mounted() {
+        this.initMouseoverListener();
+        this.restoreActiveBranch();
+        this.fetchUserBranches();
+    },
+    methods: {
+        toggleSidebar1() {
+            const body = document.body;
+            body.classList.toggle("slide-nav");
+        },
+        toggleSidebar() {
+            const body = document.body;
+            body.classList.toggle("mini-sidebar");
+        },
+        initFullScreen() {
+            document.body.classList.toggle("fullscreen-enable");
+            if (
+                !document.fullscreenElement &&
+                /* alternative standard method */
+                !document.mozFullScreenElement &&
+                !document.webkitFullscreenElement
+            ) {
+                // current working methods
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+            } else {
+                if (document.cancelFullScreen) {
+                    document.cancelFullScreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+            }
+        },
+
+        initMouseoverListener() {
+            document.addEventListener('mouseover', this.handleMouseover);
+        },
+        handleMouseover(e) {
+            e.stopPropagation();
+
+            const body = document.body;
+            const toggleBtn = document.getElementById('toggle_btn');
+
+            if (body.classList.contains('mini-sidebar') && this.isElementVisible(toggleBtn)) {
+                const target = e.target.closest('.sidebar, .header-left');
+
+                if (target) {
+                    body.classList.add('expand-menu');
+                    this.slideDownSubmenu();
+                } else {
+                    body.classList.remove('expand-menu');
+                    this.slideUpSubmenu();
+                }
+
+                e.preventDefault();
+            }
+        },
+        isElementVisible(element) {
+            return element.offsetWidth > 0 || element.offsetHeight > 0;
+        },
+        slideDownSubmenu() {
+            const subdropPlusUl = document.getElementsByClassName('subdrop');
+            for (let i = 0; i < subdropPlusUl.length; i++) {
+                const submenu = subdropPlusUl[i].nextElementSibling;
+                if (submenu && submenu.tagName.toLowerCase() === 'ul') {
+                    submenu.style.display = 'block';
+                }
+            }
+        },
+        slideUpSubmenu() {
+            const subdropPlusUl = document.getElementsByClassName('subdrop');
+            for (let i = 0; i < subdropPlusUl.length; i++) {
+                const submenu = subdropPlusUl[i].nextElementSibling;
+                if (submenu && submenu.tagName.toLowerCase() === 'ul') {
+                    submenu.style.display = 'none';
+                }
+            }
+        },
+        restoreActiveBranch() {
+            const saved = localStorage.getItem('activeBranchId');
+            if (saved !== null) {
+                this.activeBranchId = parseInt(saved, 10);
+            }
+        },
+        async fetchUserBranches() {
+            try {
+                const response = await api.get("/user/branch");
+                // Extract the array defensively
+                const branches = Array.isArray(response)
+                    ? response
+                    : Array.isArray(response?.data)
+                        ? response.data
+                        : [];
+
+                branches.forEach((b, i) => {
+                });
+
+                this.userBranches = branches;
+            } catch (error) {
+                console.error("[Branch] Failed to fetch user branches:", error);
+            }
+        },
+        async toggleItemCheckbox(branchID) {
+
+            try {
+                const response = await api.post("/user/branch/activate", { branchID });
+
+                // Persist the active branch ID so the correct toggle stays checked on reload
+                // parseInt ensures we always store/compare as a number (JSON returns numbers, localStorage returns strings)
+                this.activeBranchId = parseInt(branchID, 10);
+                localStorage.setItem('activeBranchId', this.activeBranchId);
+            } catch (error) {
+                console.error("[Branch Activate] Error:", {
+                    message: error?.message,
+                    status: error?.status,
+                    data: error?.data,
+                });
+            }
+        },
+    },
+    beforeUnmount() {
+        document.removeEventListener('mouseover', this.handleMouseover);
+    },
 };
 </script>
 
 <style scoped>
+.nav-item-toggle-dropdown .dropdown-menu {
+    min-width: 320px;
+    padding: 10px 0;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item {
+    padding: 12px 15px;
+    border-radius: 0;
+    transition: all 0.3s;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item .dropdown-logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 159, 67, 0.05) !important;
+}
+
+/* Ensure the toggle labels don't get forced colors from dropdown-item hover/active */
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .tgl-mini,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .tgl-mini {
+    background: var(--surface) !important;
+    border-color: var(--border2) !important;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .lbl-inactive,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .lbl-inactive {
+    color: var(--ink2) !important;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item:hover .lbl-active,
+.nav-item-toggle-dropdown .dropdown-menu .dropdown-item.active .lbl-active {
+    color: var(--on-fg) !important;
+}
 </style>

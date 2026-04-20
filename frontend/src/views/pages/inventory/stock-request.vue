@@ -40,8 +40,9 @@
                         class="btn btn-sm btn-icon-only btn-outline-warning" title="Edit Details">
                         <vue-feather type="edit" size="14"></vue-feather>
                       </router-link>
-                      <button v-if="item.isOwner" @click="cancelRequest(item.RSNo)"
-                        class="btn btn-sm btn-icon-only btn-outline-danger" title="Cancel Details">
+                      <button v-if="item.isOwner" @click="selectedRequest = item"
+                        class="btn btn-sm btn-icon-only btn-outline-danger" title="Cancel Request"
+                        data-bs-toggle="modal" data-bs-target="#cancelRequestModal">
                         <vue-feather type="x-circle" size="14"></vue-feather>
                       </button>
                     </div>
@@ -55,9 +56,11 @@
     </div>
 
     <!-- Modals -->
-    <ConfirmationModal v-model:visible="showConfirmModal" title="Cancel Stock Request"
-      message="Are you sure you want to cancel this stock request? This action cannot be undone."
-      confirmButtonText="Yes, Cancel it" :loading="modalLoading" @confirm="handleConfirmCancel" />
+    <CancelModal modalId="cancelRequestModal" :title="`Cancel Request ${selectedRequest?.RSNo ?? ''}`"
+      :message="`Are you sure you want to cancel Request ${selectedRequest?.RSNo ?? ''}?`"
+      :details="`Ref No: ${selectedRequest?.RSNo ?? ''}`" :item="selectedRequest" confirmLabel="Yes, Cancel it"
+      :disabled="modalLoading" @confirm="handleConfirmCancel">
+    </CancelModal>
 
     <SuccessModal v-model:visible="showSuccessModal" title="Request Cancelled" :message="successMessage"
       :autoClose="5000" />
@@ -72,14 +75,14 @@
 <script>
 import DynamicDataTable from "@/components/DynamicDataTable.vue";
 import api from "@/services/api";
-import ConfirmationModal from "@/components/modals/confirmation-modal.vue";
+import CancelModal from "@/components/action-modal/cancel-modal.vue";
 import SuccessModal from "@/components/modals/success-modal.vue";
 
 export default {
   name: "StockRequest",
   components: {
     DynamicDataTable,
-    ConfirmationModal,
+    CancelModal,
     SuccessModal,
   },
   data() {
@@ -135,16 +138,15 @@ export default {
       }
     },
 
-    cancelRequest(RSNo) {
-      this.rsNoToCancel = RSNo;
-      this.showConfirmModal = true;
+    cancelRequest(item) {
+      this.selectedRequest = item;
     },
 
-    async handleConfirmCancel() {
+    async handleConfirmCancel(item) {
       this.modalLoading = true;
       try {
         const response = await api.post('/branches/rs/cancel', {
-          rsNo: this.rsNoToCancel
+          rsNo: item?.RSNo || this.selectedRequest?.RSNo
         });
 
         if (response.status === 200) {

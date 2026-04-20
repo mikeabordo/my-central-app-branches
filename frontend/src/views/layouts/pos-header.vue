@@ -87,9 +87,10 @@
 
 
             <!-- Select Branch Dropdown Menu with Toggle Button -->
-            <li class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown">
-                <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" data-bs-toggle="dropdown"
-                    data-bs-auto-close="false">
+            <li ref="branchDropdownRoot" class="nav-item dropdown has-arrow main-drop nav-item-toggle-dropdown"
+                :class="{ show: isBranchDropdownOpen }">
+                <a href="javascript:void(0);" class="dropdown-toggle nav-link select-store" ref="branchDropdownToggle"
+                    :aria-expanded="isBranchDropdownOpen ? 'true' : 'false'" @click.prevent.stop="toggleBranchDropdown">
                     <span class="user-info">
                         <span class="user-letter">
                             <img src="@/assets/img/store/store-01.png" alt="Store Logo" class="img-fluid">
@@ -99,15 +100,16 @@
                         </span>
                     </span>
                 </a>
-                <!-- Dropdown Items -->
-                <div class="dropdown-menu dropdown-menu-right">
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-01')">
+                <!-- Dropdown Items (dynamic from GET /user/branch) -->
+                <div ref="branchDropdownMenu" class="dropdown-menu dropdown-menu-right"
+                    :class="{ show: isBranchDropdownOpen }" @click.stop>
+                    <a v-for="branch in userBranches" :key="branch.id" href="javascript:void(0);"
+                        class="dropdown-item d-flex align-items-center py-2" @click="toggleItemCheckbox(branch.id)">
                         <img src="@/assets/img/store/store-01.png" alt="Store Logo"
                             class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Warehouse</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-01" checked>
+                        <span class="flex-grow-1">{{ branch.branchstorename }}</span>
+                        <label class="tgl-mini ms-auto mb-0" @click.stop.prevent="toggleItemCheckbox(branch.id)">
+                            <input type="checkbox" :id="'branch-' + branch.id" :checked="activeBranchId === branch.id">
                             <div class="fill"></div>
                             <span class="lbl lbl-inactive">
                                 <span class="dot dot-inactive"></span>
@@ -119,63 +121,9 @@
                             </span>
                         </label>
                     </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-02')">
-                        <img src="@/assets/img/store/store-02.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">E-commerce</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-02">
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a>
-                    <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-03')">
-                        <img src="@/assets/img/store/store-03.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Branches</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-03" checked>
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a>
-                    <!-- <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center py-2"
-                        @click="toggleItemCheckbox('store-04')">
-                        <img src="@/assets/img/store/store-04.png" alt="Store Logo"
-                            class="img-fluid me-3 dropdown-logo">
-                        <span class="flex-grow-1">Grocery Eden</span>
-                        <label class="tgl-mini ms-auto mb-0" @click.stop>
-                            <input type="checkbox" id="store-04">
-                            <div class="fill"></div>
-                            <span class="lbl lbl-inactive">
-                                <span class="dot dot-inactive"></span>
-                                Inactive
-                            </span>
-                            <span class="lbl lbl-active">
-                                <span class="dot dot-active"></span>
-                                Active
-                            </span>
-                        </label>
-                    </a> -->
                 </div>
             </li>
-            <!-- Dropdown Menu with Toggle Button -->
+            <!-- /Select Branch Dropdown Menu with Toggle Button -->
 
             <!-- Flag -->
             <li class="nav-item dropdown has-arrow flag-nav nav-item-box">
@@ -371,14 +319,35 @@
 </template>
 
 <script>
+import api from "@/services/api";
 export default {
     data() {
-        return {};
+        return {
+            // Tracks the currently active branch ID — persisted in localStorage to survive reloads
+            activeBranchId: null,
+            // Branches assigned to the current user, fetched from GET /user/branch
+            userBranches: [],
+            isBranchDropdownOpen: false,
+        };
     },
     mounted() {
         this.initMouseoverListener();
+        document.addEventListener("click", this.handleDocumentClick);
+        this.restoreActiveBranch();
+        this.fetchUserBranches();
     },
     methods: {
+
+        toggleBranchDropdown(event) {
+            this.isBranchDropdownOpen = !this.isBranchDropdownOpen;
+        },
+        handleDocumentClick(event) {
+            const root = this.$refs.branchDropdownRoot;
+
+            if (this.isBranchDropdownOpen && root && !root.contains(event.target)) {
+                this.isBranchDropdownOpen = false;
+            }
+        },
         toggleSidebar1() {
             const body = document.body;
             body.classList.toggle("slide-nav");
@@ -458,32 +427,71 @@ export default {
                 }
             }
         },
-        toggleItemCheckbox(id) {
-            const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
+        restoreActiveBranch() {
+            const saved = localStorage.getItem('activeBranchId');
+            if (saved !== null) {
+                this.activeBranchId = parseInt(saved, 10);
+            }
+        },
+        async fetchUserBranches() {
+            try {
+                const response = await api.get("/user/branch");
+                // Extract the array defensively
+                const branches = Array.isArray(response)
+                    ? response
+                    : Array.isArray(response?.data)
+                        ? response.data
+                        : [];
+
+                this.userBranches = branches;
+            } catch (error) {
+                console.error("[Branch] Failed to fetch user branches:", error);
+            }
+        },
+        async toggleItemCheckbox(branchID) {
+
+
+            try {
+                const response = await api.post("/user/branch/activate", { branchID });
+
+
+                // Persist the active branch ID so the correct toggle stays checked on reload
+                // parseInt ensures we always store/compare as a number (JSON returns numbers, localStorage returns strings)
+                this.activeBranchId = parseInt(branchID, 10);
+                localStorage.setItem('activeBranchId', this.activeBranchId);
+
+            } catch (error) {
+                console.error("[Branch Activate] Error:", {
+                    message: error?.message,
+                    status: error?.status,
+                    data: error?.data,
+                });
             }
         },
     },
     beforeUnmount() {
         document.removeEventListener('mouseover', this.handleMouseover);
+        document.removeEventListener("click", this.handleDocumentClick);
     },
 };
 </script>
 
 <style scoped>
-.header-left .logo img {
-    width: 200px !important;
-}
-
-.header-left .logo-small img {
-    width: 40px !important;
-}
-
-
 .nav-item-toggle-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: auto;
+    transform: none !important;
+    margin-top: 8px;
     min-width: 320px;
     padding: 10px 0;
+    z-index: 1055;
+}
+
+.nav-item-toggle-dropdown .dropdown-menu-right {
+    left: 0;
+    right: auto;
 }
 
 .nav-item-toggle-dropdown .dropdown-menu .dropdown-item {

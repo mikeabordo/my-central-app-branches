@@ -66,7 +66,8 @@
                             <!-- Default Premium Item Layout if no slot provided -->
                             <div class="book-result-item">
                               <div class="book-result-primary">
-                                <span class="book-type-badge" v-if="result._raw.booktype">{{ result._raw.booktype }}</span>
+                                <span class="book-type-badge" v-if="result._raw.booktype">{{ result._raw.booktype
+                                }}</span>
                                 <span class="book-item-key fw-bold">{{ result._raw.bookitemkey || result.label }}</span>
                               </div>
                               <div class="book-result-secondary text-muted small">
